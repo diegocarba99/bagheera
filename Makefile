@@ -10,7 +10,8 @@ CFLAGS  = -g -Wall -std=c++11
 # The build target
 TARGET = bangheera
 
-x86TEST = x86_assembler_test
+# x86TEST = x86_assembler_test
+x86TEST = test
 
 SRC = src/
 LIB = lib/

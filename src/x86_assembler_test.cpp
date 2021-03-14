@@ -1,4 +1,5 @@
 #include "../lib/asmjit/src/asmjit/x86.h"
+#include "../lib/asmjit/src/asmjit/asmjit.h"
 #include <stdio.h>
 
 

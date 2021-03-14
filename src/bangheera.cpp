@@ -1,6 +1,7 @@
 #include "bangheera.hpp"
 #include <stdio.h>
 #include <string.h>
+#include <curses.h>
 
 #include "../lib/asmjit/src/asmjit/asmjit.h"
 
@@ -11,6 +12,8 @@
 // https://github.com/niosus/EasyClangComplete
 
 // types problem: https://stackoverflow.com/questions/16297073/win32-data-types-equivalant-in-linux
+
+
 
 
 class CMutagenSPE
@@ -90,7 +93,7 @@ private:
   unsigned long dwEncryptionKey;
 
   // asmjit Assembler instance
-  Assembler a;
+  x86::Assembler a;
 
   // the register which will store a pointer
   // to the data which is to be decrypted
@@ -145,6 +148,10 @@ private:
   void AppendEncryptedData();
   void UpdateDeltaOffsetAddressing();
 };
+
+
+
+
 
 
 ///////////////////////////////////////////////////////////
@@ -847,4 +854,62 @@ int CMutagenSPE::PolySPE(unsigned char * lpInputBuffer, \
   ///////////////////////////////////////////////////////////
 
   return MUTAGEN_ERR_SUCCESS;
+}
+
+
+
+
+
+// declare the prototype of the decryption procedure
+typedef usigned int(__stdcall *DecryptionProc)(PVOID);
+
+int __cdecl main()
+{
+  // input data (in this case a simple string,
+  // although it could be any data buffer)
+  char szHelloWorld[] = "Hello world!";
+
+  // create an instance of the polymorphic
+  // engine
+  CMutagenSPE *speEngine = new CMutagenSPE();
+
+  // a pointer to the generated decryption
+  // function will be placed here
+  unsigned char *lpcDecryptionProc = NULL;
+
+  // the size of the decryption code (and
+  // its encrypted payload) will go here
+  unsigned int dwDecryptionProcSize = 0;
+
+  // encrypt the input data and dynamically
+  // generate a decryption function
+  speEngine->PolySPE(reinterpret_cast<PBYTE>(szHelloWorld), \
+                     sizeof(szHelloWorld), \
+                     &lpcDecryptionProc, \
+                     &dwDecryptionProcSize);
+
+  // write the generated function to disk
+  FILE *hFile = fopen("polymorphic_code.bin", "wb");
+
+  if (hFile != NULL)
+  {
+    fwrite(lpDecryptionProc, dwDecryptionProcSize, 1, hFile);
+    fclose(hFile);
+  }
+
+  // cast the function pointer to the right type
+  DecryptionProc lpDecryptionProc = reinterpret_cast<DecryptionProc>(lpcDecryptionProc);
+
+  // the output buffer for the decrypted data
+  char szOutputBuffer[128] = { 0xCC };
+
+  // call the decryption function via its
+  // function pointer
+  unsigned int dwOutputSize = lpDecryptionProc(szOutputBuffer);
+
+  // display the decrypted text - if everything
+  // went correctly this will show "Hello world!"
+  printf(szOutputBuffer);
+
+  return 0;
 }
