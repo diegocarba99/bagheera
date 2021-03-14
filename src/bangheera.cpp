@@ -4,6 +4,8 @@
 
 #include "../lib/asmjit/src/asmjit/asmjit.h"
 
+#define ASMJIT_EMBED
+#define ASMJIT_STATIC
 
 
 // https://github.com/niosus/EasyClangComplete
@@ -20,10 +22,10 @@ public:
   // the main function which performs the
   // encryption and generates the polymorphic
   // code
-  int PolySPE(PBYTE lpInputBuffer, \
-                            DWORD dwInputBuffer, \
-                            PBYTE *lpOutputBuffer, \
-                            PDWORD lpdwOutputSize);
+  int PolySPE(unsigned char * lpInputBuffer, \
+                            unsigned long dwInputBuffer, \
+                            unsigned char * *lpOutputBuffer, \
+                            unsigned long * lpdwOutputSize);
 
 private:
 
@@ -32,10 +34,10 @@ private:
   typedef struct _SPE_OUTPUT_REGS {
 
     // target register
-    asmjit::GPReg regDst;
+    asmjit::x86::GPReg regDst;
 
     // value to write in this register
-    DWORD dwValue;
+    unsigned long dwValue;
 
   } SPE_OUTPUT_REGS, *P_SPE_OUTPUT_REGS;
 
@@ -46,16 +48,16 @@ private:
     // on two registers; FALSE if it is
     // performed between the target register
     // and the value in dwCryptValue
-    BOOL bCryptWithReg;
+    int bCryptWithReg;
 
     asmjit::GPReg regDst;
     asmjit::GPReg regSrc;
 
     // encryption operation
-    BYTE cCryptOp;
+    unsigned char cCryptOp;
 
     // encryption value
-    DWORD dwCryptValue;
+    unsigned long dwCryptValue;
 
   } SPE_CRYPT_OP, *P_SPE_CRYPT_OP;
 
@@ -76,16 +78,16 @@ private:
   P_SPE_CRYPT_OP lpcoCryptOps;
 
   // count of encryption operations
-  DWORD dwCryptOpsCount;
+  unsigned long dwCryptOpsCount;
 
   // pointer to the encrypted data block
   DATA_ITEM diEncryptedData;
 
   // number of blocks of encrypted data
-  DWORD dwEncryptedBlocks;
+  unsigned long dwEncryptedBlocks;
 
   // encryption key
-  DWORD dwEncryptionKey;
+  unsigned long dwEncryptionKey;
 
   // asmjit Assembler instance
   Assembler a;
@@ -124,22 +126,22 @@ private:
   // the size of the unused code between delta
   // offset and the instructions which get that
   // value from the stack
-  DWORD dwUnusedCodeSize;
+  unsigned long dwUnusedCodeSize;
 
   // helper methods
   void RandomizeRegisters();
   void GeneratePrologue();
   void GenerateDeltaOffset();
-  void EncryptInputBuffer(PBYTE lpInputBuffer, \
-                          DWORD dwInputBuffer, \
-                          DWORD dwMinInstr, \
-                          DWORD dwMaxInstr);
+  void EncryptInputBuffer(unsigned char * lpInputBuffer, \
+                          unsigned long dwInputBuffer, \
+                          unsigned long dwMinInstr, \
+                          unsigned long dwMaxInstr);
   void SetupDecryptionKeys();
   void GenerateDecryption();
   void SetupOutputRegisters(SPE_OUTPUT_REGS *regOutput, \
-                            DWORD dwCount);
-  void GenerateEpilogue(DWORD dwParamCount);
-  void AlignDecryptorBody(DWORD dwAlignment);
+                            unsigned long dwCount);
+  void GenerateEpilogue(unsigned long dwParamCount);
+  void AlignDecryptorBody(unsigned long dwAlignment);
   void AppendEncryptedData();
   void UpdateDeltaOffsetAddressing();
 };
@@ -249,9 +251,9 @@ void CMutagenSPE::GenerateDeltaOffset()
   // decryption_function:
   // ...
   // call delta_offset
-  // mov eax,1 | xor eax,eax ; \
+  // mov eax,1 | xor eax,eax ; |
   // leave                   ;  > unused instructions
-  // ret 4                   ; /
+  // ret 4                   ; |
   // delta_offset:
   // pop regSrc
   // add regSrc, (encrypted_data-delta_offset +
@@ -286,13 +288,13 @@ void CMutagenSPE::GenerateDeltaOffset()
   }
 
   a.leave();
-  a.ret(1 * sizeof(DWORD));
+  a.ret(1 * sizeof(unsigned long));
 
   // calculate the size of the unused code,
   // i.e. the difference between the current
   // position and the beginning of the
   // unused code
-  dwUnusedCodeSize = static_cast<DWORD>(a.getOffset() - posUnusedCodeStart);
+  dwUnusedCodeSize = static_cast<unsigned long>(a.getOffset() - posUnusedCodeStart);
 
   // put the label "delta_offset:" here
   a.bind(lblDeltaOffset);
@@ -306,7 +308,7 @@ void CMutagenSPE::GenerateDeltaOffset()
 
   //a.pop(regSrc);
   a.mov(regSrc, dword_ptr(esp));
-  a.add(esp, imm(sizeof(DWORD)));
+  a.add(esp, imm(sizeof(unsigned long)));
 
   // the address of the label "delta_offset:"
   // will now be in the regSrc register;
@@ -318,10 +320,10 @@ void CMutagenSPE::GenerateDeltaOffset()
   // the "add" instruction
   a.add(regSrc, imm(987654321));
 
-  // save the position of the previous DWORD
+  // save the position of the previous unsigned long
   // so that we can later update it to contain
   // the length of the remainder of the function
-  posSrcPtr = a.getOffset() - sizeof(DWORD);
+  posSrcPtr = a.getOffset() - sizeof(unsigned long);
 }
 
 ///////////////////////////////////////////////////////////
@@ -331,30 +333,30 @@ void CMutagenSPE::GenerateDeltaOffset()
 //
 ///////////////////////////////////////////////////////////
 
-void CMutagenSPE::EncryptInputBuffer(PBYTE lpInputBuffer, \
-                                     DWORD dwInputBuffer, \
-                                     DWORD dwMinInstr, \
-                                     DWORD dwMaxInstr)
+void CMutagenSPE::EncryptInputBuffer(unsigned char * lpInputBuffer, \
+                                     unsigned long dwInputBuffer, \
+                                     unsigned long dwMinInstr, \
+                                     unsigned long dwMaxInstr)
 {
   // generate an encryption key
   dwEncryptionKey = rnd_dword();
 
   // round up the size of the input buffer
-  DWORD dwAlignedSize = align_dword(dwInputBuffer);
+  unsigned long dwAlignedSize = align_dword(dwInputBuffer);
 
   // number of blocks to encrypt
   // divide the size of the input data
   // into blocks of 4 bytes (DWORDs)
-  dwEncryptedBlocks = dwAlignedSize / sizeof(DWORD);
+  dwEncryptedBlocks = dwAlignedSize / sizeof(unsigned long);
 
-  PDWORD lpdwInputBuffer = reinterpret_cast<PDWORD>(lpInputBuffer);
+  unsigned long * lpdwInputBuffer = reinterpret_cast<unsigned long *>(lpInputBuffer);
 
   // allocate memory for the output data
   // (the size will be rounded to the
   // block size)
   di_valloc(&diEncryptedData, dwAlignedSize);
 
-  PDWORD lpdwOutputBuffer = reinterpret_cast<PDWORD>(diEncryptedData.lpPtr);
+  unsigned long * lpdwOutputBuffer = reinterpret_cast<unsigned long *>(diEncryptedData.lpPtr);
 
   // randomly select the number of encryption instructions
   dwCryptOpsCount = rnd_range(dwMinInstr, dwMaxInstr);
@@ -369,7 +371,7 @@ void CMutagenSPE::EncryptInputBuffer(PBYTE lpInputBuffer, \
   lpcoCryptOps = reinterpret_cast<P_SPE_CRYPT_OP>(diCryptOps.lpPtr);
 
   // generate encryption instructions and their type
-  for (DWORD i = 0; i < dwCryptOpsCount; i++)
+  for (unsigned long i = 0; i < dwCryptOpsCount; i++)
   {
     // will the instruction perform an operation
     // combining regData and regKey?
@@ -391,19 +393,19 @@ void CMutagenSPE::EncryptInputBuffer(PBYTE lpInputBuffer, \
     }
 
     // randomly choose the type of encryption instruction
-    lpcoCryptOps[i].cCryptOp = static_cast<BYTE>(rnd_range(SPE_CRYPT_OP_ADD, SPE_CRYPT_OP_NEG));
+    lpcoCryptOps[i].cCryptOp = static_cast<unsigned char>(rnd_range(SPE_CRYPT_OP_ADD, SPE_CRYPT_OP_NEG));
   }
 
   // encrypt the input data according to the
   // instructions we have just generated
-  for (DWORD i = 0, dwInitialEncryptionKey = dwEncryptionKey; i < dwEncryptedBlocks; i++)
+  for (unsigned long i = 0, dwInitialEncryptionKey = dwEncryptionKey; i < dwEncryptedBlocks; i++)
   {
     // take the next block for encryption
-    DWORD dwInputBlock = lpdwInputBuffer[i];
+    unsigned long dwInputBlock = lpdwInputBuffer[i];
 
     // encryption loop: executes the sequence of
     // encryption instructions on the data block
-    for (DWORD j = 0, dwCurrentEncryptionKey; j < dwCryptOpsCount; j++)
+    for (unsigned long j = 0, dwCurrentEncryptionKey; j < dwCryptOpsCount; j++)
     {
       if (lpcoCryptOps[j].bCryptWithReg == FALSE)
       {
@@ -453,7 +455,7 @@ void CMutagenSPE::SetupDecryptionKeys()
 {
   // set up a decryption key in the regKey
   // register, which will itself be encrypted
-  DWORD dwKeyModifier = rnd_dword();
+  unsigned long dwKeyModifier = rnd_dword();
 
   // randomly generate instructions to set up
   // the decryption key
@@ -509,7 +511,7 @@ void CMutagenSPE::GenerateDecryption()
   // decryption instruction in turn (reversing the
   // order and the operations that were used for
   // encryption!)
-  for (DWORD i = dwCryptOpsCount - 1; i != -1L; i--)
+  for (unsigned long i = dwCryptOpsCount - 1; i != -1L; i--)
   {
     // encryption was done either with the key
     // in register regKey, or a constant value,
@@ -517,7 +519,7 @@ void CMutagenSPE::GenerateDecryption()
     // the appropriate decryption instructions
     if (lpcoCryptOps[i].bCryptWithReg == FALSE)
     {
-      DWORD dwDecryptionKey = lpcoCryptOps[i].dwCryptValue;
+      unsigned long dwDecryptionKey = lpcoCryptOps[i].dwCryptValue;
 
       switch(lpcoCryptOps[i].cCryptOp)
       {
@@ -567,8 +569,8 @@ void CMutagenSPE::GenerateDecryption()
 
   // update the pointers to the input and ouput
   // buffers to point to the next block
-  a.add(regSrc, imm(sizeof(DWORD)));
-  a.add(regDst, imm(sizeof(DWORD)));
+  a.add(regSrc, imm(sizeof(unsigned long)));
+  a.add(regDst, imm(sizeof(unsigned long)));
 
   // decrement the loop counter (the number of
   // blocks remaining to decrypt)
@@ -586,7 +588,7 @@ void CMutagenSPE::GenerateDecryption()
 //
 ///////////////////////////////////////////////////////////
 
-void CMutagenSPE::SetupOutputRegisters(SPE_OUTPUT_REGS *regOutput, DWORD dwCount)
+void CMutagenSPE::SetupOutputRegisters(SPE_OUTPUT_REGS *regOutput, unsigned long dwCount)
 {
   // if there are no output registers to
   // set up, return
@@ -602,7 +604,7 @@ void CMutagenSPE::SetupOutputRegisters(SPE_OUTPUT_REGS *regOutput, DWORD dwCount
   // generate instructions to set up the
   // output registers
   // mov r32, imm32
-  for (DWORD i = 0; i < dwCount; i++)
+  for (unsigned long i = 0; i < dwCount; i++)
   {
     a.mov(regOutput[i].regDst, imm(regOutput[i].dwValue));
   }
@@ -615,7 +617,7 @@ void CMutagenSPE::SetupOutputRegisters(SPE_OUTPUT_REGS *regOutput, DWORD dwCount
 //
 ///////////////////////////////////////////////////////////
 
-void CMutagenSPE::GenerateEpilogue(DWORD dwParamCount)
+void CMutagenSPE::GenerateEpilogue(unsigned long dwParamCount)
 {
   // restore the original values of
   // registers ESI EDI EBX
@@ -639,7 +641,7 @@ void CMutagenSPE::GenerateEpilogue(DWORD dwParamCount)
   // our function; additionally adjust
   // the stack by the size of the passed
   // parameters (by stdcall convention)
-  a.ret(imm(dwParamCount * sizeof(DWORD)));
+  a.ret(imm(dwParamCount * sizeof(unsigned long)));
 }
 
 
@@ -650,15 +652,15 @@ void CMutagenSPE::GenerateEpilogue(DWORD dwParamCount)
 //
 ///////////////////////////////////////////////////////////
 
-void CMutagenSPE::AlignDecryptorBody(DWORD dwAlignment)
+void CMutagenSPE::AlignDecryptorBody(unsigned long dwAlignment)
 {
   // take the current size of the code
-  DWORD dwCurrentSize = a.getCodeSize();
+  unsigned long dwCurrentSize = a.getCodeSize();
 
   // find the number of bytes that would
   // align the size to a multiple of the
   // supplied size (e.g. 4)
-  DWORD dwAlignmentSize = align_bytes(dwCurrentSize, dwAlignment) - dwCurrentSize;
+  unsigned long dwAlignmentSize = align_bytes(dwCurrentSize, dwAlignment) - dwCurrentSize;
 
   // check if any alignment is required
   if (dwAlignmentSize == 0)
@@ -687,7 +689,7 @@ void CMutagenSPE::AlignDecryptorBody(DWORD dwAlignment)
 
 void CMutagenSPE::UpdateDeltaOffsetAddressing()
 {
-  DWORD dwAdjustSize = static_cast<DWORD>(a.getOffset() - posDeltaOffset);
+  unsigned long dwAdjustSize = static_cast<unsigned long>(a.getOffset() - posDeltaOffset);
 
   // correct the instruction which sets up
   // a pointer to the encrypted data block
@@ -710,12 +712,12 @@ void CMutagenSPE::UpdateDeltaOffsetAddressing()
 
 void CMutagenSPE::AppendEncryptedData()
 {
-  PDWORD lpdwEncryptedData = reinterpret_cast<PDWORD>(diEncryptedData.lpPtr);
+  unsigned long * lpdwEncryptedData = reinterpret_cast<unsigned long *>(diEncryptedData.lpPtr);
 
   // place the encrypted data buffer
   // at the end of the decryption function
-  // (in 4-byte blocks)
-  for (DWORD i = 0; i < dwEncryptedBlocks; i++)
+  // (in 4-unsigned char blocks)
+  for (unsigned long i = 0; i < dwEncryptedBlocks; i++)
   {
     a._emitDWord(lpdwEncryptedData[i]);
   }
@@ -729,10 +731,10 @@ void CMutagenSPE::AppendEncryptedData()
 //
 ///////////////////////////////////////////////////////////
 
-int CMutagenSPE::PolySPE(PBYTE lpInputBuffer, \
-                                       DWORD dwInputBuffer, \
-                                       PBYTE *lpOutputBuffer, \
-                                       PDWORD lpdwOutputSize)
+int CMutagenSPE::PolySPE(unsigned char * lpInputBuffer, \
+                                       unsigned long dwInputBuffer, \
+                                       unsigned char * *lpOutputBuffer, \
+                                       unsigned long * lpdwOutputSize)
 {
   ///////////////////////////////////////////////////////////
   //
@@ -807,7 +809,7 @@ int CMutagenSPE::PolySPE(PBYTE lpInputBuffer, \
   //
   ///////////////////////////////////////////////////////////
 
-  DWORD dwOutputSize = a.getCodeSize();
+  unsigned long dwOutputSize = a.getCodeSize();
 
   // assemble the code of the polymorphic function (this resolves jumps and labels)
   PVOID lpPolymorphicCode = a.make();

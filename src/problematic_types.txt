@@ -1,0 +1,6 @@
+Problematic types:
+	- GPReg
+	- DATA_ITEM
+	- Assembler
+	- Label
+	- sysint_t
