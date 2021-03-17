@@ -5,13 +5,13 @@ CC = g++
 #  -g         - this flag adds debugging information to the executable file
 #  -Wall      - this flag is used to turn on most compiler warnings
 #  -std=c++11 - this flag enables C++11 support in order to use AsmJit
-CFLAGS  = -g -Wall -std=c++11
+CFLAGS  = -g -Wall -std=c++11 -DASMJIT_STATIC
 
 # The build target
 TARGET = bangheera
 
-# x86TEST = x86_assembler_test
-x86TEST = test
+x86TEST = x86_assembler_test
+#x86TEST = test
 
 SRC = src/
 LIB = lib/
@@ -19,15 +19,14 @@ LIB = lib/
 all: $(TARGET)
 
 $(TARGET): $(SRC)$(TARGET).cpp
-	$(CC) -c $(SRC)$(TARGET).cpp $(CFLAGS)
-	$(CC) -o $(SRC)$(TARGET) $(SRC)$(TARGET).o -L$(LIB) -lasmjitd $(CFLAGS)
+	$(CC) -o $(SRC)$(TARGET) $(SRC)$(TARGET).cpp $(CFLAGS) -L$(LIB) -lasmjit 
 
 make single:
-	$(CC) -o $(SRC)$(TARGET) $(SRC)$(TARGET).cpp -L$(LIB) -lasmjitd $(CFLAGS)
+	$(CC) -o $(SRC)$(TARGET) $(SRC)$(TARGET).cpp $(CFLAGS) -L$(LIB) -lasmjit
 
 test:
-	$(CC) -o $(SRC)$(x86TEST) $(SRC)$(x86TEST).cpp $(CFLAGS) 
+	$(CC) -o $(SRC)$(x86TEST) $(SRC)$(x86TEST).cpp $(CFLAGS) -L$(LIB) -lasmjit 
 
 
-clean:
-	$(RM) $(SRRC)$(TARGET)
+clean: 
+	$(RM) $(SRC)$(TARGET)

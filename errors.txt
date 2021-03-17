@@ -1,0 +1,1186 @@
+src/bangheera.cpp:9: warning: "ASMJIT_STATIC" redefined
+    9 | #define ASMJIT_STATIC
+      | 
+<command-line>: note: this is the location of the previous definition
+src/bangheera.cpp:115:11: error: ‘x86’ in namespace ‘asmjit’ does not name a type
+  115 |   asmjit::x86:Reg regData;
+      |           ^~~
+In file included from src/../lib/./core/../core/../core/globals.h:27,
+                 from src/../lib/./core/../core/environment.h:27,
+                 from src/../lib/./core/archtraits.h:27,
+                 from src/../lib/./core.h:2009,
+                 from src/../lib/asmjit.h:27,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/../x86/x86globals.h:35:28: note: ‘asmjit::x86’ declared here
+   35 | ASMJIT_BEGIN_SUB_NAMESPACE(x86)
+      |                            ^~~
+src/../lib/./core/../core/../core/../core/api-config.h:521:13: note: in definition of macro ‘ASMJIT_BEGIN_SUB_NAMESPACE’
+  521 |   namespace NAMESPACE {
+      |             ^~~~~~~~~
+src/bangheera.cpp:121:3: error: ‘Label’ does not name a type
+  121 |   Label lblDeltaOffset;
+      |   ^~~~~
+src/bangheera.cpp:124:3: error: ‘sysint_t’ does not name a type; did you mean ‘wint_t’?
+  124 |   sysint_t posDeltaOffset;
+      |   ^~~~~~~~
+      |   wint_t
+src/bangheera.cpp:127:3: error: ‘sysint_t’ does not name a type; did you mean ‘wint_t’?
+  127 |   sysint_t posSrcPtr;
+      |   ^~~~~~~~
+      |   wint_t
+src/bangheera.cpp: In member function ‘void CMutagenSPE::RandomizeRegisters()’:
+src/bangheera.cpp:166:11: error: ‘GPReg’ is not a member of ‘asmjit’
+  166 |   asmjit::GPReg cRegsGeneral[] = { eax, ecx, ebx, edx, esi, edi };
+      |           ^~~~~
+src/bangheera.cpp:169:15: error: ‘cRegsGeneral’ was not declared in this scope
+  169 |   mixup_array(cRegsGeneral, _countof(cRegsGeneral));
+      |               ^~~~~~~~~~~~
+src/bangheera.cpp:169:29: error: ‘_countof’ was not declared in this scope
+  169 |   mixup_array(cRegsGeneral, _countof(cRegsGeneral));
+      |                             ^~~~~~~~
+src/bangheera.cpp:169:3: error: ‘mixup_array’ was not declared in this scope
+  169 |   mixup_array(cRegsGeneral, _countof(cRegsGeneral));
+      |   ^~~~~~~~~~~
+src/bangheera.cpp:191:3: error: ‘regData’ was not declared in this scope; did you mean ‘regDst’?
+  191 |   regData = cRegsGeneral[4];
+      |   ^~~~~~~
+      |   regDst
+src/bangheera.cpp:195:11: error: ‘GPReg’ is not a member of ‘asmjit’
+  195 |   asmjit::GPReg cRegsSafe[] = { esi, edi, ebx };
+      |           ^~~~~
+src/bangheera.cpp:198:15: error: ‘cRegsSafe’ was not declared in this scope
+  198 |   mixup_array(cRegsSafe, _countof(cRegsSafe));
+      |               ^~~~~~~~~
+src/bangheera.cpp: In member function ‘void CMutagenSPE::GeneratePrologue()’:
+src/bangheera.cpp:217:7: error: ‘rnd_bin’ was not declared in this scope
+  217 |   if (rnd_bin() == 0)
+      |       ^~~~~~~
+src/bangheera.cpp:219:12: error: ‘ebp’ was not declared in this scope; did you mean ‘asmjit::x86::regs::ebp’?
+  219 |     a.push(ebp);
+      |            ^~~
+      |            asmjit::x86::regs::ebp
+In file included from src/../lib/./x86/../x86/x86emitter.h:30,
+                 from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/../x86/x86operand.h:592:22: note: ‘asmjit::x86::regs::ebp’ declared here
+  592 | static constexpr Gpd ebp = Gpd(Gp::kIdBp);
+      |                      ^~~
+src/bangheera.cpp:220:15: error: ‘esp’ was not declared in this scope; did you mean ‘asmjit::x86::regs::esp’?
+  220 |     a.mov(ebp,esp);
+      |               ^~~
+      |               asmjit::x86::regs::esp
+In file included from src/../lib/./x86/../x86/x86emitter.h:30,
+                 from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/../x86/x86operand.h:591:22: note: ‘asmjit::x86::regs::esp’ declared here
+  591 | static constexpr Gpd esp = Gpd(Gp::kIdSp);
+      |                      ^~~
+src/bangheera.cpp:227:13: error: ‘imm’ was not declared in this scope; did you mean ‘asmjit::imm’?
+  227 |     a.enter(imm(0), imm(0));
+      |             ^~~
+      |             asmjit::imm
+In file included from src/../lib/./core/archtraits.h:28,
+                 from src/../lib/./core.h:2009,
+                 from src/../lib/asmjit.h:27,
+                 from src/bangheera.cpp:6:
+src/../lib/./core/../core/operand.h:1486:22: note: ‘asmjit::imm’ declared here
+ 1486 | static constexpr Imm imm(const T& val) noexcept { return Imm(val); }
+      |                      ^~~
+src/bangheera.cpp:242:27: error: ‘ebp’ was not declared in this scope; did you mean ‘asmjit::x86::regs::ebp’?
+  242 |   a.mov(regDst, dword_ptr(ebp, 0x08 + (4 * 0)));
+      |                           ^~~
+      |                           asmjit::x86::regs::ebp
+In file included from src/../lib/./x86/../x86/x86emitter.h:30,
+                 from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/../x86/x86operand.h:592:22: note: ‘asmjit::x86::regs::ebp’ declared here
+  592 | static constexpr Gpd ebp = Gpd(Gp::kIdBp);
+      |                      ^~~
+src/bangheera.cpp:242:17: error: ‘dword_ptr’ was not declared in this scope; did you mean ‘asmjit::x86::dword_ptr’?
+  242 |   a.mov(regDst, dword_ptr(ebp, 0x08 + (4 * 0)));
+      |                 ^~~~~~~~~
+      |                 asmjit::x86::dword_ptr
+In file included from src/../lib/./x86/../x86/x86emitter.h:30,
+                 from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note: ‘asmjit::x86::dword_ptr’ declared here
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:59:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   59 |   static constexpr Mem FUNC(uint64_t base, const Vec& index, uint32_t shift = 0) noexcept { \
+      |                        ^~~~
+src/bangheera.cpp: In member function ‘void CMutagenSPE::GenerateDeltaOffset()’:
+src/bangheera.cpp:274:3: error: ‘lblDeltaOffset’ was not declared in this scope
+  274 |   lblDeltaOffset = a.newLabel();
+      |   ^~~~~~~~~~~~~~
+src/bangheera.cpp:279:3: error: ‘sysint_t’ was not declared in this scope; did you mean ‘wint_t’?
+  279 |   sysint_t posUnusedCodeStart = a.getOffset();
+      |   ^~~~~~~~
+      |   wint_t
+src/bangheera.cpp:288:7: error: ‘rnd_bin’ was not declared in this scope
+  288 |   if (rnd_bin() == 0)
+      |       ^~~~~~~
+src/bangheera.cpp:290:11: error: ‘eax’ was not declared in this scope; did you mean ‘asmjit::x86::regs::eax’?
+  290 |     a.mov(eax, imm(1));
+      |           ^~~
+      |           asmjit::x86::regs::eax
+In file included from src/../lib/./x86/../x86/x86emitter.h:30,
+                 from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/../x86/x86operand.h:587:22: note: ‘asmjit::x86::regs::eax’ declared here
+  587 | static constexpr Gpd eax = Gpd(Gp::kIdAx);
+      |                      ^~~
+src/bangheera.cpp:290:16: error: ‘imm’ was not declared in this scope; did you mean ‘asmjit::imm’?
+  290 |     a.mov(eax, imm(1));
+      |                ^~~
+      |                asmjit::imm
+In file included from src/../lib/./core/archtraits.h:28,
+                 from src/../lib/./core.h:2009,
+                 from src/../lib/asmjit.h:27,
+                 from src/bangheera.cpp:6:
+src/../lib/./core/../core/operand.h:1486:22: note: ‘asmjit::imm’ declared here
+ 1486 | static constexpr Imm imm(const T& val) noexcept { return Imm(val); }
+      |                      ^~~
+src/bangheera.cpp:294:12: error: ‘eax’ was not declared in this scope; did you mean ‘asmjit::x86::regs::eax’?
+  294 |     a.xor_(eax,eax);
+      |            ^~~
+      |            asmjit::x86::regs::eax
+In file included from src/../lib/./x86/../x86/x86emitter.h:30,
+                 from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/../x86/x86operand.h:587:22: note: ‘asmjit::x86::regs::eax’ declared here
+  587 | static constexpr Gpd eax = Gpd(Gp::kIdAx);
+      |                      ^~~
+src/bangheera.cpp:304:51: error: ‘class asmjit::x86::Assembler’ has no member named ‘getOffset’; did you mean ‘setOffset’?
+  304 |   dwUnusedCodeSize = static_cast<unsigned long>(a.getOffset() - posUnusedCodeStart);
+      |                                                   ^~~~~~~~~
+      |                                                   setOffset
+src/bangheera.cpp:304:65: error: ‘posUnusedCodeStart’ was not declared in this scope
+  304 |   dwUnusedCodeSize = static_cast<unsigned long>(a.getOffset() - posUnusedCodeStart);
+      |                                                                 ^~~~~~~~~~~~~~~~~~
+src/bangheera.cpp:309:3: error: ‘posDeltaOffset’ was not declared in this scope
+  309 |   posDeltaOffset = a.getOffset();
+      |   ^~~~~~~~~~~~~~
+src/bangheera.cpp:309:22: error: ‘class asmjit::x86::Assembler’ has no member named ‘getOffset’; did you mean ‘setOffset’?
+  309 |   posDeltaOffset = a.getOffset();
+      |                      ^~~~~~~~~
+      |                      setOffset
+src/bangheera.cpp:317:27: error: ‘esp’ was not declared in this scope; did you mean ‘asmjit::x86::regs::esp’?
+  317 |   a.mov(regSrc, dword_ptr(esp));
+      |                           ^~~
+      |                           asmjit::x86::regs::esp
+In file included from src/../lib/./x86/../x86/x86emitter.h:30,
+                 from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/../x86/x86operand.h:591:22: note: ‘asmjit::x86::regs::esp’ declared here
+  591 | static constexpr Gpd esp = Gpd(Gp::kIdSp);
+      |                      ^~~
+src/bangheera.cpp:317:17: error: ‘dword_ptr’ was not declared in this scope; did you mean ‘asmjit::x86::dword_ptr’?
+  317 |   a.mov(regSrc, dword_ptr(esp));
+      |                 ^~~~~~~~~
+      |                 asmjit::x86::dword_ptr
+In file included from src/../lib/./x86/../x86/x86emitter.h:30,
+                 from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note: ‘asmjit::x86::dword_ptr’ declared here
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:59:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   59 |   static constexpr Mem FUNC(uint64_t base, const Vec& index, uint32_t shift = 0) noexcept { \
+      |                        ^~~~
+src/bangheera.cpp:318:14: error: ‘imm’ was not declared in this scope; did you mean ‘asmjit::imm’?
+  318 |   a.add(esp, imm(sizeof(unsigned long)));
+      |              ^~~
+      |              asmjit::imm
+In file included from src/../lib/./core/archtraits.h:28,
+                 from src/../lib/./core.h:2009,
+                 from src/../lib/asmjit.h:27,
+                 from src/bangheera.cpp:6:
+src/../lib/./core/../core/operand.h:1486:22: note: ‘asmjit::imm’ declared here
+ 1486 | static constexpr Imm imm(const T& val) noexcept { return Imm(val); }
+      |                      ^~~
+src/bangheera.cpp:333:3: error: ‘posSrcPtr’ was not declared in this scope
+  333 |   posSrcPtr = a.getOffset() - sizeof(unsigned long);
+      |   ^~~~~~~~~
+src/bangheera.cpp:333:17: error: ‘class asmjit::x86::Assembler’ has no member named ‘getOffset’; did you mean ‘setOffset’?
+  333 |   posSrcPtr = a.getOffset() - sizeof(unsigned long);
+      |                 ^~~~~~~~~
+      |                 setOffset
+src/bangheera.cpp: In member function ‘void CMutagenSPE::EncryptInputBuffer(unsigned char*, long unsigned int, long unsigned int, long unsigned int)’:
+src/bangheera.cpp:349:21: error: ‘rnd_dword’ was not declared in this scope
+  349 |   dwEncryptionKey = rnd_dword();
+      |                     ^~~~~~~~~
+src/bangheera.cpp:352:33: error: ‘align_dword’ was not declared in this scope
+  352 |   unsigned long dwAlignedSize = align_dword(dwInputBuffer);
+      |                                 ^~~~~~~~~~~
+src/bangheera.cpp:364:3: error: ‘di_valloc’ was not declared in this scope; did you mean ‘valloc’?
+  364 |   di_valloc(&diEncryptedData, dwAlignedSize);
+      |   ^~~~~~~~~
+      |   valloc
+src/bangheera.cpp:366:88: error: request for member ‘lpPtr’ in ‘((CMutagenSPE*)this)->CMutagenSPE::diEncryptedData’, which is of non-class type ‘char*’
+  366 |   unsigned long * lpdwOutputBuffer = reinterpret_cast<unsigned long *>(diEncryptedData.lpPtr);
+      |                                                                                        ^~~~~
+src/bangheera.cpp:369:21: error: ‘rnd_range’ was not declared in this scope
+  369 |   dwCryptOpsCount = rnd_range(dwMinInstr, dwMaxInstr);
+      |                     ^~~~~~~~~
+src/bangheera.cpp:379:62: error: request for member ‘lpPtr’ in ‘((CMutagenSPE*)this)->CMutagenSPE::diCryptOps’, which is of non-class type ‘char*’
+  379 |   lpcoCryptOps = reinterpret_cast<P_SPE_CRYPT_OP>(diCryptOps.lpPtr);
+      |                                                              ^~~~~
+src/bangheera.cpp:386:37: error: ‘rnd_bool’ was not declared in this scope
+  386 |     lpcoCryptOps[i].bCryptWithReg = rnd_bool();
+      |                                     ^~~~~~~~
+src/bangheera.cpp:389:30: error: ‘regData’ was not declared in this scope; did you mean ‘regDst’?
+  389 |     lpcoCryptOps[i].regDst = regData;
+      |                              ^~~~~~~
+      |                              regDst
+src/bangheera.cpp: In member function ‘void CMutagenSPE::SetupDecryptionKeys()’:
+src/bangheera.cpp:466:33: error: ‘rnd_dword’ was not declared in this scope
+  466 |   unsigned long dwKeyModifier = rnd_dword();
+      |                                 ^~~~~~~~~
+src/bangheera.cpp:470:10: error: ‘rnd_max’ was not declared in this scope
+  470 |   switch(rnd_max(2))
+      |          ^~~~~~~
+src/bangheera.cpp:475:19: error: ‘imm’ was not declared in this scope; did you mean ‘asmjit::imm’?
+  475 |     a.mov(regKey, imm(dwEncryptionKey - dwKeyModifier));
+      |                   ^~~
+      |                   asmjit::imm
+In file included from src/../lib/./core/archtraits.h:28,
+                 from src/../lib/./core.h:2009,
+                 from src/../lib/asmjit.h:27,
+                 from src/bangheera.cpp:6:
+src/../lib/./core/../core/operand.h:1486:22: note: ‘asmjit::imm’ declared here
+ 1486 | static constexpr Imm imm(const T& val) noexcept { return Imm(val); }
+      |                      ^~~
+src/bangheera.cpp: In member function ‘void CMutagenSPE::GenerateDecryption()’:
+src/bangheera.cpp:506:18: error: ‘imm’ was not declared in this scope; did you mean ‘asmjit::imm’?
+  506 |   a.mov(regSize, imm(dwEncryptedBlocks));
+      |                  ^~~
+      |                  asmjit::imm
+In file included from src/../lib/./core/archtraits.h:28,
+                 from src/../lib/./core.h:2009,
+                 from src/../lib/asmjit.h:27,
+                 from src/bangheera.cpp:6:
+src/../lib/./core/../core/operand.h:1486:22: note: ‘asmjit::imm’ declared here
+ 1486 | static constexpr Imm imm(const T& val) noexcept { return Imm(val); }
+      |                      ^~~
+src/bangheera.cpp:510:3: error: ‘Label’ was not declared in this scope; did you mean ‘asmjit::Label’?
+  510 |   Label lblDecryptionLoop = a.newLabel();
+      |   ^~~~~
+      |   asmjit::Label
+In file included from src/../lib/./core/archtraits.h:28,
+                 from src/../lib/./core.h:2009,
+                 from src/../lib/asmjit.h:27,
+                 from src/bangheera.cpp:6:
+src/../lib/./core/../core/operand.h:536:7: note: ‘asmjit::Label’ declared here
+  536 | class Label : public Operand {
+      |       ^~~~~
+src/bangheera.cpp:512:10: error: ‘lblDecryptionLoop’ was not declared in this scope
+  512 |   a.bind(lblDecryptionLoop);
+      |          ^~~~~~~~~~~~~~~~~
+src/bangheera.cpp:516:9: error: ‘regData’ was not declared in this scope; did you mean ‘regDst’?
+  516 |   a.mov(regData, dword_ptr(regSrc));
+      |         ^~~~~~~
+      |         regDst
+src/bangheera.cpp:516:34: error: no matching function for call to ‘dword_ptr(asmjit::x86::Reg&)’
+  516 |   a.mov(regData, dword_ptr(regSrc));
+      |                                  ^
+In file included from src/../lib/./x86/../x86/x86emitter.h:30,
+                 from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note: candidate: ‘constexpr asmjit::x86::Mem asmjit::x86::dword_ptr(const asmjit::x86::Gp&, int32_t)’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:35:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   35 |   static constexpr Mem FUNC(const Gp& base, int32_t offset = 0) noexcept {            \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:35:39: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Gp&’
+   35 |   static constexpr Mem FUNC(const Gp& base, int32_t offset = 0) noexcept {            \
+      |                             ~~~~~~~~~~^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:1: note: in expansion of macro ‘ASMJIT_MEM_PTR’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      | ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note: candidate: ‘constexpr asmjit::x86::Mem asmjit::x86::dword_ptr(const asmjit::x86::Gp&, const asmjit::x86::Gp&, uint32_t, int32_t)’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:38:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   38 |   static constexpr Mem FUNC(const Gp& base, const Gp& index, uint32_t shift = 0, int32_t offset = 0) noexcept { \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note:   candidate expects 4 arguments, 1 provided
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:38:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   38 |   static constexpr Mem FUNC(const Gp& base, const Gp& index, uint32_t shift = 0, int32_t offset = 0) noexcept { \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note: candidate: ‘constexpr asmjit::x86::Mem asmjit::x86::dword_ptr(const asmjit::x86::Gp&, const asmjit::x86::Vec&, uint32_t, int32_t)’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:41:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   41 |   static constexpr Mem FUNC(const Gp& base, const Vec& index, uint32_t shift = 0, int32_t offset = 0) noexcept { \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note:   candidate expects 4 arguments, 1 provided
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:41:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   41 |   static constexpr Mem FUNC(const Gp& base, const Vec& index, uint32_t shift = 0, int32_t offset = 0) noexcept { \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note: candidate: ‘constexpr asmjit::x86::Mem asmjit::x86::dword_ptr(const asmjit::Label&, int32_t)’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:44:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   44 |   static constexpr Mem FUNC(const Label& base, int32_t offset = 0) noexcept {         \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:44:42: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::Label&’
+   44 |   static constexpr Mem FUNC(const Label& base, int32_t offset = 0) noexcept {         \
+      |                             ~~~~~~~~~~~~~^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:1: note: in expansion of macro ‘ASMJIT_MEM_PTR’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      | ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note: candidate: ‘constexpr asmjit::x86::Mem asmjit::x86::dword_ptr(const asmjit::Label&, const asmjit::x86::Gp&, uint32_t, int32_t)’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:47:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   47 |   static constexpr Mem FUNC(const Label& base, const Gp& index, uint32_t shift = 0, int32_t offset = 0) noexcept { \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note:   candidate expects 4 arguments, 1 provided
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:47:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   47 |   static constexpr Mem FUNC(const Label& base, const Gp& index, uint32_t shift = 0, int32_t offset = 0) noexcept { \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note: candidate: ‘constexpr asmjit::x86::Mem asmjit::x86::dword_ptr(const asmjit::x86::Rip&, int32_t)’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:50:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   50 |   static constexpr Mem FUNC(const Rip& rip_, int32_t offset = 0) noexcept {           \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:50:40: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Rip&’
+   50 |   static constexpr Mem FUNC(const Rip& rip_, int32_t offset = 0) noexcept {           \
+      |                             ~~~~~~~~~~~^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:1: note: in expansion of macro ‘ASMJIT_MEM_PTR’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      | ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note: candidate: ‘constexpr asmjit::x86::Mem asmjit::x86::dword_ptr(uint64_t)’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:53:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   53 |   static constexpr Mem FUNC(uint64_t base) noexcept {                                 \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:53:38: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘uint64_t’ {aka ‘long unsigned int’}
+   53 |   static constexpr Mem FUNC(uint64_t base) noexcept {                                 \
+      |                             ~~~~~~~~~^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:1: note: in expansion of macro ‘ASMJIT_MEM_PTR’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      | ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note: candidate: ‘constexpr asmjit::x86::Mem asmjit::x86::dword_ptr(uint64_t, const asmjit::x86::Gp&, uint32_t)’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:56:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   56 |   static constexpr Mem FUNC(uint64_t base, const Gp& index, uint32_t shift = 0) noexcept { \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note:   candidate expects 3 arguments, 1 provided
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:56:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   56 |   static constexpr Mem FUNC(uint64_t base, const Gp& index, uint32_t shift = 0) noexcept { \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note: candidate: ‘constexpr asmjit::x86::Mem asmjit::x86::dword_ptr(uint64_t, const asmjit::x86::Vec&, uint32_t)’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:59:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   59 |   static constexpr Mem FUNC(uint64_t base, const Vec& index, uint32_t shift = 0) noexcept { \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note:   candidate expects 3 arguments, 1 provided
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:59:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   59 |   static constexpr Mem FUNC(uint64_t base, const Vec& index, uint32_t shift = 0) noexcept { \
+      |                        ^~~~
+src/bangheera.cpp:522:49: warning: comparison of integer expressions of different signedness: ‘long unsigned int’ and ‘long int’ [-Wsign-compare]
+  522 |   for (unsigned long i = dwCryptOpsCount - 1; i != -1L; i--)
+      |                                               ~~^~~~~~
+src/bangheera.cpp:544:38: error: no matching function for call to ‘asmjit::x86::Assembler::not_(asmjit::x86::Reg&)’
+  544 |         a.not_(lpcoCryptOps[i].regDst);
+      |                                      ^
+In file included from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/x86emitter.h:597:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::not_(const asmjit::x86::Gp&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  597 |   ASMJIT_INST_1x(not_, Not, Gp)                                        // ANY
+      |                  ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:16: note: in definition of macro ‘ASMJIT_INST_1x’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Gp&’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:597:3: note: in expansion of macro ‘ASMJIT_INST_1x’
+  597 |   ASMJIT_INST_1x(not_, Not, Gp)                                        // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:598:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::not_(const asmjit::x86::Mem&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  598 |   ASMJIT_INST_1x(not_, Not, Mem)                                       // ANY
+      |                  ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:16: note: in definition of macro ‘ASMJIT_INST_1x’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Mem&’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:598:3: note: in expansion of macro ‘ASMJIT_INST_1x’
+  598 |   ASMJIT_INST_1x(not_, Not, Mem)                                       // ANY
+      |   ^~~~~~~~~~~~~~
+src/bangheera.cpp:547:37: error: no matching function for call to ‘asmjit::x86::Assembler::neg(asmjit::x86::Reg&)’
+  547 |         a.neg(lpcoCryptOps[i].regDst);
+      |                                     ^
+In file included from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/x86emitter.h:590:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::neg(const asmjit::x86::Gp&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  590 |   ASMJIT_INST_1x(neg, Neg, Gp)                                         // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:38:16: note: in definition of macro ‘ASMJIT_INST_1x’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Gp&’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:590:3: note: in expansion of macro ‘ASMJIT_INST_1x’
+  590 |   ASMJIT_INST_1x(neg, Neg, Gp)                                         // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:591:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::neg(const asmjit::x86::Mem&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  591 |   ASMJIT_INST_1x(neg, Neg, Mem)                                        // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:38:16: note: in definition of macro ‘ASMJIT_INST_1x’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Mem&’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:591:3: note: in expansion of macro ‘ASMJIT_INST_1x’
+  591 |   ASMJIT_INST_1x(neg, Neg, Mem)                                        // ANY
+      |   ^~~~~~~~~~~~~~
+src/bangheera.cpp:556:61: error: no matching function for call to ‘asmjit::x86::Assembler::sub(asmjit::x86::Reg&, asmjit::x86::Reg&)’
+  556 |         a.sub(lpcoCryptOps[i].regDst, lpcoCryptOps[i].regSrc);
+      |                                                             ^
+In file included from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/x86emitter.h:670:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::sub(const asmjit::x86::Gp&, const asmjit::x86::Gp&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  670 |   ASMJIT_INST_2x(sub, Sub, Gp, Gp)                                     // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:74:16: note: in definition of macro ‘ASMJIT_INST_2x’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:74:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Gp&’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:670:3: note: in expansion of macro ‘ASMJIT_INST_2x’
+  670 |   ASMJIT_INST_2x(sub, Sub, Gp, Gp)                                     // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:671:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::sub(const asmjit::x86::Gp&, const asmjit::x86::Mem&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  671 |   ASMJIT_INST_2x(sub, Sub, Gp, Mem)                                    // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:74:16: note: in definition of macro ‘ASMJIT_INST_2x’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:74:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Gp&’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:671:3: note: in expansion of macro ‘ASMJIT_INST_2x’
+  671 |   ASMJIT_INST_2x(sub, Sub, Gp, Mem)                                    // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:672:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::sub(const asmjit::x86::Gp&, const asmjit::Imm&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  672 |   ASMJIT_INST_2x(sub, Sub, Gp, Imm)                                    // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:74:16: note: in definition of macro ‘ASMJIT_INST_2x’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:74:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Gp&’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:672:3: note: in expansion of macro ‘ASMJIT_INST_2x’
+  672 |   ASMJIT_INST_2x(sub, Sub, Gp, Imm)                                    // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:673:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::sub(const asmjit::x86::Mem&, const asmjit::x86::Gp&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  673 |   ASMJIT_INST_2x(sub, Sub, Mem, Gp)                                    // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:74:16: note: in definition of macro ‘ASMJIT_INST_2x’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:74:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Mem&’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:673:3: note: in expansion of macro ‘ASMJIT_INST_2x’
+  673 |   ASMJIT_INST_2x(sub, Sub, Mem, Gp)                                    // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:674:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::sub(const asmjit::x86::Mem&, const asmjit::Imm&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  674 |   ASMJIT_INST_2x(sub, Sub, Mem, Imm)                                   // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:74:16: note: in definition of macro ‘ASMJIT_INST_2x’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:74:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Mem&’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:674:3: note: in expansion of macro ‘ASMJIT_INST_2x’
+  674 |   ASMJIT_INST_2x(sub, Sub, Mem, Imm)                                   // ANY
+      |   ^~~~~~~~~~~~~~
+src/bangheera.cpp:559:61: error: no matching function for call to ‘asmjit::x86::Assembler::add(asmjit::x86::Reg&, asmjit::x86::Reg&)’
+  559 |         a.add(lpcoCryptOps[i].regDst, lpcoCryptOps[i].regSrc);
+      |                                                             ^
+In file included from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/x86emitter.h:469:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::add(const asmjit::x86::Gp&, const asmjit::x86::Gp&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  469 |   ASMJIT_INST_2x(add, Add, Gp, Gp)                                     // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:74:16: note: in definition of macro ‘ASMJIT_INST_2x’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:74:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Gp&’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:469:3: note: in expansion of macro ‘ASMJIT_INST_2x’
+  469 |   ASMJIT_INST_2x(add, Add, Gp, Gp)                                     // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:470:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::add(const asmjit::x86::Gp&, const asmjit::x86::Mem&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  470 |   ASMJIT_INST_2x(add, Add, Gp, Mem)                                    // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:74:16: note: in definition of macro ‘ASMJIT_INST_2x’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:74:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Gp&’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:470:3: note: in expansion of macro ‘ASMJIT_INST_2x’
+  470 |   ASMJIT_INST_2x(add, Add, Gp, Mem)                                    // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:471:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::add(const asmjit::x86::Gp&, const asmjit::Imm&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  471 |   ASMJIT_INST_2x(add, Add, Gp, Imm)                                    // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:74:16: note: in definition of macro ‘ASMJIT_INST_2x’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:74:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Gp&’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:471:3: note: in expansion of macro ‘ASMJIT_INST_2x’
+  471 |   ASMJIT_INST_2x(add, Add, Gp, Imm)                                    // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:472:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::add(const asmjit::x86::Mem&, const asmjit::x86::Gp&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  472 |   ASMJIT_INST_2x(add, Add, Mem, Gp)                                    // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:74:16: note: in definition of macro ‘ASMJIT_INST_2x’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:74:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Mem&’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:472:3: note: in expansion of macro ‘ASMJIT_INST_2x’
+  472 |   ASMJIT_INST_2x(add, Add, Mem, Gp)                                    // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:473:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::add(const asmjit::x86::Mem&, const asmjit::Imm&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  473 |   ASMJIT_INST_2x(add, Add, Mem, Imm)                                   // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:74:16: note: in definition of macro ‘ASMJIT_INST_2x’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:74:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Mem&’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:473:3: note: in expansion of macro ‘ASMJIT_INST_2x’
+  473 |   ASMJIT_INST_2x(add, Add, Mem, Imm)                                   // ANY
+      |   ^~~~~~~~~~~~~~
+src/bangheera.cpp:562:62: error: no matching function for call to ‘asmjit::x86::Assembler::xor_(asmjit::x86::Reg&, asmjit::x86::Reg&)’
+  562 |         a.xor_(lpcoCryptOps[i].regDst, lpcoCryptOps[i].regSrc);
+      |                                                              ^
+In file included from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/x86emitter.h:689:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::xor_(const asmjit::x86::Gp&, const asmjit::x86::Gp&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  689 |   ASMJIT_INST_2x(xor_, Xor, Gp, Gp)                                    // ANY
+      |                  ^~~~
+src/../lib/./x86/../x86/x86emitter.h:74:16: note: in definition of macro ‘ASMJIT_INST_2x’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:74:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Gp&’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:689:3: note: in expansion of macro ‘ASMJIT_INST_2x’
+  689 |   ASMJIT_INST_2x(xor_, Xor, Gp, Gp)                                    // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:690:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::xor_(const asmjit::x86::Gp&, const asmjit::x86::Mem&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  690 |   ASMJIT_INST_2x(xor_, Xor, Gp, Mem)                                   // ANY
+      |                  ^~~~
+src/../lib/./x86/../x86/x86emitter.h:74:16: note: in definition of macro ‘ASMJIT_INST_2x’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:74:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Gp&’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:690:3: note: in expansion of macro ‘ASMJIT_INST_2x’
+  690 |   ASMJIT_INST_2x(xor_, Xor, Gp, Mem)                                   // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:691:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::xor_(const asmjit::x86::Gp&, const asmjit::Imm&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  691 |   ASMJIT_INST_2x(xor_, Xor, Gp, Imm)                                   // ANY
+      |                  ^~~~
+src/../lib/./x86/../x86/x86emitter.h:74:16: note: in definition of macro ‘ASMJIT_INST_2x’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:74:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Gp&’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:691:3: note: in expansion of macro ‘ASMJIT_INST_2x’
+  691 |   ASMJIT_INST_2x(xor_, Xor, Gp, Imm)                                   // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:692:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::xor_(const asmjit::x86::Mem&, const asmjit::x86::Gp&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  692 |   ASMJIT_INST_2x(xor_, Xor, Mem, Gp)                                   // ANY
+      |                  ^~~~
+src/../lib/./x86/../x86/x86emitter.h:74:16: note: in definition of macro ‘ASMJIT_INST_2x’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:74:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Mem&’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:692:3: note: in expansion of macro ‘ASMJIT_INST_2x’
+  692 |   ASMJIT_INST_2x(xor_, Xor, Mem, Gp)                                   // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:693:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::xor_(const asmjit::x86::Mem&, const asmjit::Imm&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  693 |   ASMJIT_INST_2x(xor_, Xor, Mem, Imm)                                  // ANY
+      |                  ^~~~
+src/../lib/./x86/../x86/x86emitter.h:74:16: note: in definition of macro ‘ASMJIT_INST_2x’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:74:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Mem&’
+   74 |   inline Error NAME(const T0& o0, const T1& o1) { return _emitter()->_emitI(Inst::kId##ID, o0, o1); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:693:3: note: in expansion of macro ‘ASMJIT_INST_2x’
+  693 |   ASMJIT_INST_2x(xor_, Xor, Mem, Imm)                                  // ANY
+      |   ^~~~~~~~~~~~~~
+src/bangheera.cpp:565:38: error: no matching function for call to ‘asmjit::x86::Assembler::not_(asmjit::x86::Reg&)’
+  565 |         a.not_(lpcoCryptOps[i].regDst);
+      |                                      ^
+In file included from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/x86emitter.h:597:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::not_(const asmjit::x86::Gp&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  597 |   ASMJIT_INST_1x(not_, Not, Gp)                                        // ANY
+      |                  ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:16: note: in definition of macro ‘ASMJIT_INST_1x’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Gp&’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:597:3: note: in expansion of macro ‘ASMJIT_INST_1x’
+  597 |   ASMJIT_INST_1x(not_, Not, Gp)                                        // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:598:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::not_(const asmjit::x86::Mem&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  598 |   ASMJIT_INST_1x(not_, Not, Mem)                                       // ANY
+      |                  ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:16: note: in definition of macro ‘ASMJIT_INST_1x’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Mem&’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:598:3: note: in expansion of macro ‘ASMJIT_INST_1x’
+  598 |   ASMJIT_INST_1x(not_, Not, Mem)                                       // ANY
+      |   ^~~~~~~~~~~~~~
+src/bangheera.cpp:568:37: error: no matching function for call to ‘asmjit::x86::Assembler::neg(asmjit::x86::Reg&)’
+  568 |         a.neg(lpcoCryptOps[i].regDst);
+      |                                     ^
+In file included from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/x86emitter.h:590:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::neg(const asmjit::x86::Gp&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  590 |   ASMJIT_INST_1x(neg, Neg, Gp)                                         // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:38:16: note: in definition of macro ‘ASMJIT_INST_1x’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Gp&’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:590:3: note: in expansion of macro ‘ASMJIT_INST_1x’
+  590 |   ASMJIT_INST_1x(neg, Neg, Gp)                                         // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:591:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::neg(const asmjit::x86::Mem&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  591 |   ASMJIT_INST_1x(neg, Neg, Mem)                                        // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:38:16: note: in definition of macro ‘ASMJIT_INST_1x’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Mem&’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:591:3: note: in expansion of macro ‘ASMJIT_INST_1x’
+  591 |   ASMJIT_INST_1x(neg, Neg, Mem)                                        // ANY
+      |   ^~~~~~~~~~~~~~
+src/bangheera.cpp:576:25: error: no matching function for call to ‘dword_ptr(asmjit::x86::Reg&)’
+  576 |   a.mov(dword_ptr(regDst), regData);
+      |                         ^
+In file included from src/../lib/./x86/../x86/x86emitter.h:30,
+                 from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note: candidate: ‘constexpr asmjit::x86::Mem asmjit::x86::dword_ptr(const asmjit::x86::Gp&, int32_t)’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:35:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   35 |   static constexpr Mem FUNC(const Gp& base, int32_t offset = 0) noexcept {            \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:35:39: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Gp&’
+   35 |   static constexpr Mem FUNC(const Gp& base, int32_t offset = 0) noexcept {            \
+      |                             ~~~~~~~~~~^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:1: note: in expansion of macro ‘ASMJIT_MEM_PTR’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      | ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note: candidate: ‘constexpr asmjit::x86::Mem asmjit::x86::dword_ptr(const asmjit::x86::Gp&, const asmjit::x86::Gp&, uint32_t, int32_t)’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:38:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   38 |   static constexpr Mem FUNC(const Gp& base, const Gp& index, uint32_t shift = 0, int32_t offset = 0) noexcept { \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note:   candidate expects 4 arguments, 1 provided
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:38:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   38 |   static constexpr Mem FUNC(const Gp& base, const Gp& index, uint32_t shift = 0, int32_t offset = 0) noexcept { \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note: candidate: ‘constexpr asmjit::x86::Mem asmjit::x86::dword_ptr(const asmjit::x86::Gp&, const asmjit::x86::Vec&, uint32_t, int32_t)’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:41:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   41 |   static constexpr Mem FUNC(const Gp& base, const Vec& index, uint32_t shift = 0, int32_t offset = 0) noexcept { \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note:   candidate expects 4 arguments, 1 provided
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:41:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   41 |   static constexpr Mem FUNC(const Gp& base, const Vec& index, uint32_t shift = 0, int32_t offset = 0) noexcept { \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note: candidate: ‘constexpr asmjit::x86::Mem asmjit::x86::dword_ptr(const asmjit::Label&, int32_t)’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:44:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   44 |   static constexpr Mem FUNC(const Label& base, int32_t offset = 0) noexcept {         \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:44:42: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::Label&’
+   44 |   static constexpr Mem FUNC(const Label& base, int32_t offset = 0) noexcept {         \
+      |                             ~~~~~~~~~~~~~^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:1: note: in expansion of macro ‘ASMJIT_MEM_PTR’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      | ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note: candidate: ‘constexpr asmjit::x86::Mem asmjit::x86::dword_ptr(const asmjit::Label&, const asmjit::x86::Gp&, uint32_t, int32_t)’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:47:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   47 |   static constexpr Mem FUNC(const Label& base, const Gp& index, uint32_t shift = 0, int32_t offset = 0) noexcept { \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note:   candidate expects 4 arguments, 1 provided
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:47:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   47 |   static constexpr Mem FUNC(const Label& base, const Gp& index, uint32_t shift = 0, int32_t offset = 0) noexcept { \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note: candidate: ‘constexpr asmjit::x86::Mem asmjit::x86::dword_ptr(const asmjit::x86::Rip&, int32_t)’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:50:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   50 |   static constexpr Mem FUNC(const Rip& rip_, int32_t offset = 0) noexcept {           \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:50:40: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Rip&’
+   50 |   static constexpr Mem FUNC(const Rip& rip_, int32_t offset = 0) noexcept {           \
+      |                             ~~~~~~~~~~~^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:1: note: in expansion of macro ‘ASMJIT_MEM_PTR’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      | ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note: candidate: ‘constexpr asmjit::x86::Mem asmjit::x86::dword_ptr(uint64_t)’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:53:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   53 |   static constexpr Mem FUNC(uint64_t base) noexcept {                                 \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:53:38: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘uint64_t’ {aka ‘long unsigned int’}
+   53 |   static constexpr Mem FUNC(uint64_t base) noexcept {                                 \
+      |                             ~~~~~~~~~^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:1: note: in expansion of macro ‘ASMJIT_MEM_PTR’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      | ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note: candidate: ‘constexpr asmjit::x86::Mem asmjit::x86::dword_ptr(uint64_t, const asmjit::x86::Gp&, uint32_t)’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:56:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   56 |   static constexpr Mem FUNC(uint64_t base, const Gp& index, uint32_t shift = 0) noexcept { \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note:   candidate expects 3 arguments, 1 provided
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:56:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   56 |   static constexpr Mem FUNC(uint64_t base, const Gp& index, uint32_t shift = 0) noexcept { \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note: candidate: ‘constexpr asmjit::x86::Mem asmjit::x86::dword_ptr(uint64_t, const asmjit::x86::Vec&, uint32_t)’
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:59:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   59 |   static constexpr Mem FUNC(uint64_t base, const Vec& index, uint32_t shift = 0) noexcept { \
+      |                        ^~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:1101:16: note:   candidate expects 3 arguments, 1 provided
+ 1101 | ASMJIT_MEM_PTR(dword_ptr, 4)
+      |                ^~~~~~~~~
+src/../lib/./x86/../x86/../x86/x86operand.h:59:24: note: in definition of macro ‘ASMJIT_MEM_PTR’
+   59 |   static constexpr Mem FUNC(uint64_t base, const Vec& index, uint32_t shift = 0) noexcept { \
+      |                        ^~~~
+src/bangheera.cpp:585:16: error: no matching function for call to ‘asmjit::x86::Assembler::dec(asmjit::x86::Reg&)’
+  585 |   a.dec(regSize);
+      |                ^
+In file included from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/x86emitter.h:523:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::dec(const asmjit::x86::Gp&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  523 |   ASMJIT_INST_1x(dec, Dec, Gp)                                         // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:38:16: note: in definition of macro ‘ASMJIT_INST_1x’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Gp&’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:523:3: note: in expansion of macro ‘ASMJIT_INST_1x’
+  523 |   ASMJIT_INST_1x(dec, Dec, Gp)                                         // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:524:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::dec(const asmjit::x86::Mem&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  524 |   ASMJIT_INST_1x(dec, Dec, Mem)                                        // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:38:16: note: in definition of macro ‘ASMJIT_INST_1x’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Mem&’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:524:3: note: in expansion of macro ‘ASMJIT_INST_1x’
+  524 |   ASMJIT_INST_1x(dec, Dec, Mem)                                        // ANY
+      |   ^~~~~~~~~~~~~~
+src/bangheera.cpp: In member function ‘void CMutagenSPE::SetupOutputRegisters(CMutagenSPE::SPE_OUTPUT_REGS*, long unsigned int)’:
+src/bangheera.cpp:610:3: error: ‘mixup_array’ was not declared in this scope
+  610 |   mixup_array(regOutput, dwCount);
+      |   ^~~~~~~~~~~
+src/bangheera.cpp:617:32: error: ‘imm’ was not declared in this scope; did you mean ‘asmjit::imm’?
+  617 |     a.mov(regOutput[i].regDst, imm(regOutput[i].dwValue));
+      |                                ^~~
+      |                                asmjit::imm
+In file included from src/../lib/./core/archtraits.h:28,
+                 from src/../lib/./core.h:2009,
+                 from src/../lib/asmjit.h:27,
+                 from src/bangheera.cpp:6:
+src/../lib/./core/../core/operand.h:1486:22: note: ‘asmjit::imm’ declared here
+ 1486 | static constexpr Imm imm(const T& val) noexcept { return Imm(val); }
+      |                      ^~~
+src/bangheera.cpp: In member function ‘void CMutagenSPE::GenerateEpilogue(long unsigned int)’:
+src/bangheera.cpp:632:17: error: no matching function for call to ‘asmjit::x86::Assembler::pop(asmjit::x86::Reg&)’
+  632 |   a.pop(regSafe3);
+      |                 ^
+In file included from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/x86emitter.h:604:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::pop(const asmjit::x86::Gp&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  604 |   ASMJIT_INST_1x(pop, Pop, Gp)                                         // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:38:16: note: in definition of macro ‘ASMJIT_INST_1x’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Gp&’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:604:3: note: in expansion of macro ‘ASMJIT_INST_1x’
+  604 |   ASMJIT_INST_1x(pop, Pop, Gp)                                         // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:605:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::pop(const asmjit::x86::Mem&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  605 |   ASMJIT_INST_1x(pop, Pop, Mem)                                        // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:38:16: note: in definition of macro ‘ASMJIT_INST_1x’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Mem&’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:605:3: note: in expansion of macro ‘ASMJIT_INST_1x’
+  605 |   ASMJIT_INST_1x(pop, Pop, Mem)                                        // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:606:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::pop(const asmjit::x86::SReg&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  606 |   ASMJIT_INST_1x(pop, Pop, SReg);                                      // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:38:16: note: in definition of macro ‘ASMJIT_INST_1x’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::SReg&’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:606:3: note: in expansion of macro ‘ASMJIT_INST_1x’
+  606 |   ASMJIT_INST_1x(pop, Pop, SReg);                                      // ANY
+      |   ^~~~~~~~~~~~~~
+src/bangheera.cpp:633:17: error: no matching function for call to ‘asmjit::x86::Assembler::pop(asmjit::x86::Reg&)’
+  633 |   a.pop(regSafe2);
+      |                 ^
+In file included from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/x86emitter.h:604:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::pop(const asmjit::x86::Gp&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  604 |   ASMJIT_INST_1x(pop, Pop, Gp)                                         // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:38:16: note: in definition of macro ‘ASMJIT_INST_1x’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Gp&’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:604:3: note: in expansion of macro ‘ASMJIT_INST_1x’
+  604 |   ASMJIT_INST_1x(pop, Pop, Gp)                                         // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:605:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::pop(const asmjit::x86::Mem&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  605 |   ASMJIT_INST_1x(pop, Pop, Mem)                                        // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:38:16: note: in definition of macro ‘ASMJIT_INST_1x’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Mem&’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:605:3: note: in expansion of macro ‘ASMJIT_INST_1x’
+  605 |   ASMJIT_INST_1x(pop, Pop, Mem)                                        // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:606:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::pop(const asmjit::x86::SReg&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  606 |   ASMJIT_INST_1x(pop, Pop, SReg);                                      // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:38:16: note: in definition of macro ‘ASMJIT_INST_1x’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::SReg&’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:606:3: note: in expansion of macro ‘ASMJIT_INST_1x’
+  606 |   ASMJIT_INST_1x(pop, Pop, SReg);                                      // ANY
+      |   ^~~~~~~~~~~~~~
+src/bangheera.cpp:634:17: error: no matching function for call to ‘asmjit::x86::Assembler::pop(asmjit::x86::Reg&)’
+  634 |   a.pop(regSafe1);
+      |                 ^
+In file included from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/x86emitter.h:604:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::pop(const asmjit::x86::Gp&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  604 |   ASMJIT_INST_1x(pop, Pop, Gp)                                         // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:38:16: note: in definition of macro ‘ASMJIT_INST_1x’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Gp&’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:604:3: note: in expansion of macro ‘ASMJIT_INST_1x’
+  604 |   ASMJIT_INST_1x(pop, Pop, Gp)                                         // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:605:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::pop(const asmjit::x86::Mem&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  605 |   ASMJIT_INST_1x(pop, Pop, Mem)                                        // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:38:16: note: in definition of macro ‘ASMJIT_INST_1x’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::Mem&’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:605:3: note: in expansion of macro ‘ASMJIT_INST_1x’
+  605 |   ASMJIT_INST_1x(pop, Pop, Mem)                                        // ANY
+      |   ^~~~~~~~~~~~~~
+src/../lib/./x86/../x86/x86emitter.h:606:18: note: candidate: ‘asmjit::Error asmjit::x86::EmitterExplicitT<This>::pop(const asmjit::x86::SReg&) [with This = asmjit::x86::Assembler; asmjit::Error = unsigned int]’
+  606 |   ASMJIT_INST_1x(pop, Pop, SReg);                                      // ANY
+      |                  ^~~
+src/../lib/./x86/../x86/x86emitter.h:38:16: note: in definition of macro ‘ASMJIT_INST_1x’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                ^~~~
+src/../lib/./x86/../x86/x86emitter.h:38:31: note:   no known conversion for argument 1 from ‘asmjit::x86::Reg’ to ‘const asmjit::x86::SReg&’
+   38 |   inline Error NAME(const T0& o0) { return _emitter()->_emitI(Inst::kId##ID, o0); }
+      |                     ~~~~~~~~~~^~
+src/../lib/./x86/../x86/x86emitter.h:606:3: note: in expansion of macro ‘ASMJIT_INST_1x’
+  606 |   ASMJIT_INST_1x(pop, Pop, SReg);                                      // ANY
+      |   ^~~~~~~~~~~~~~
+src/bangheera.cpp:637:7: error: ‘rnd_bin’ was not declared in this scope
+  637 |   if (rnd_bin() == 0)
+      |       ^~~~~~~
+src/bangheera.cpp:644:11: error: ‘esp’ was not declared in this scope; did you mean ‘asmjit::x86::regs::esp’?
+  644 |     a.mov(esp,ebp);
+      |           ^~~
+      |           asmjit::x86::regs::esp
+In file included from src/../lib/./x86/../x86/x86emitter.h:30,
+                 from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/../x86/x86operand.h:591:22: note: ‘asmjit::x86::regs::esp’ declared here
+  591 | static constexpr Gpd esp = Gpd(Gp::kIdSp);
+      |                      ^~~
+src/bangheera.cpp:644:15: error: ‘ebp’ was not declared in this scope; did you mean ‘asmjit::x86::regs::ebp’?
+  644 |     a.mov(esp,ebp);
+      |               ^~~
+      |               asmjit::x86::regs::ebp
+In file included from src/../lib/./x86/../x86/x86emitter.h:30,
+                 from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/../x86/x86operand.h:592:22: note: ‘asmjit::x86::regs::ebp’ declared here
+  592 | static constexpr Gpd ebp = Gpd(Gp::kIdBp);
+      |                      ^~~
+src/bangheera.cpp:652:9: error: ‘imm’ was not declared in this scope; did you mean ‘asmjit::imm’?
+  652 |   a.ret(imm(dwParamCount * sizeof(unsigned long)));
+      |         ^~~
+      |         asmjit::imm
+In file included from src/../lib/./core/archtraits.h:28,
+                 from src/../lib/./core.h:2009,
+                 from src/../lib/asmjit.h:27,
+                 from src/bangheera.cpp:6:
+src/../lib/./core/../core/operand.h:1486:22: note: ‘asmjit::imm’ declared here
+ 1486 | static constexpr Imm imm(const T& val) noexcept { return Imm(val); }
+      |                      ^~~
+src/bangheera.cpp: In member function ‘void CMutagenSPE::AlignDecryptorBody(long unsigned int)’:
+src/bangheera.cpp:666:35: error: ‘class asmjit::x86::Assembler’ has no member named ‘getCodeSize’
+  666 |   unsigned long dwCurrentSize = a.getCodeSize();
+      |                                   ^~~~~~~~~~~
+src/bangheera.cpp:671:35: error: ‘align_bytes’ was not declared in this scope
+  671 |   unsigned long dwAlignmentSize = align_bytes(dwCurrentSize, dwAlignment) - dwCurrentSize;
+      |                                   ^~~~~~~~~~~
+src/bangheera.cpp:680:7: error: ‘rnd_bin’ was not declared in this scope
+  680 |   if (rnd_bin() == 0)
+      |       ^~~~~~~
+src/bangheera.cpp: In member function ‘void CMutagenSPE::UpdateDeltaOffsetAddressing()’:
+src/bangheera.cpp:700:61: error: ‘class asmjit::x86::Assembler’ has no member named ‘getOffset’; did you mean ‘setOffset’?
+  700 |   unsigned long dwAdjustSize = static_cast<unsigned long>(a.getOffset() - posDeltaOffset);
+      |                                                             ^~~~~~~~~
+      |                                                             setOffset
+src/bangheera.cpp:700:75: error: ‘posDeltaOffset’ was not declared in this scope
+  700 |   unsigned long dwAdjustSize = static_cast<unsigned long>(a.getOffset() - posDeltaOffset);
+      |                                                                           ^~~~~~~~~~~~~~
+src/bangheera.cpp:710:5: error: ‘class asmjit::x86::Assembler’ has no member named ‘setDWordAt’
+  710 |   a.setDWordAt(posSrcPtr, dwAdjustSize + dwUnusedCodeSize);
+      |     ^~~~~~~~~~
+src/bangheera.cpp:710:16: error: ‘posSrcPtr’ was not declared in this scope
+  710 |   a.setDWordAt(posSrcPtr, dwAdjustSize + dwUnusedCodeSize);
+      |                ^~~~~~~~~
+src/bangheera.cpp: In member function ‘void CMutagenSPE::AppendEncryptedData()’:
+src/bangheera.cpp:723:89: error: request for member ‘lpPtr’ in ‘((CMutagenSPE*)this)->CMutagenSPE::diEncryptedData’, which is of non-class type ‘char*’
+  723 |   unsigned long * lpdwEncryptedData = reinterpret_cast<unsigned long *>(diEncryptedData.lpPtr);
+      |                                                                                         ^~~~~
+src/bangheera.cpp:730:7: error: ‘class asmjit::x86::Assembler’ has no member named ‘_emitDWord’; did you mean ‘_emitter’?
+  730 |     a._emitDWord(lpdwEncryptedData[i]);
+      |       ^~~~~~~~~~
+      |       _emitter
+src/bangheera.cpp: In member function ‘int CMutagenSPE::PolySPE(unsigned char*, long unsigned int, unsigned char**, long unsigned int*)’:
+src/bangheera.cpp:756:5: error: return-statement with no value, in function returning ‘int’ [-fpermissive]
+  756 |     return MUTAGEN_ERR_PARAMS;
+      |     ^~~~~~
+src/bangheera.cpp:786:37: error: ‘eax’ was not declared in this scope; did you mean ‘asmjit::x86::regs::eax’?
+  786 |   SPE_OUTPUT_REGS regOutput[] = { { eax, dwInputBuffer } };
+      |                                     ^~~
+      |                                     asmjit::x86::regs::eax
+In file included from src/../lib/./x86/../x86/x86emitter.h:30,
+                 from src/../lib/./x86/x86assembler.h:28,
+                 from src/../lib/./x86.h:109,
+                 from src/../lib/asmjit.h:30,
+                 from src/bangheera.cpp:6:
+src/../lib/./x86/../x86/../x86/x86operand.h:587:22: note: ‘asmjit::x86::regs::eax’ declared here
+  587 | static constexpr Gpd eax = Gpd(Gp::kIdAx);
+      |                      ^~~
+src/bangheera.cpp:787:35: error: ‘_countof’ was not declared in this scope
+  787 |   SetupOutputRegisters(regOutput, _countof(regOutput));
+      |                                   ^~~~~~~~
+src/bangheera.cpp:794:22: error: ‘rnd_bin’ was not declared in this scope
+  794 |   AlignDecryptorBody(rnd_bin() == 0 ? 4L : 16L);
+      |                      ^~~~~~~
+src/bangheera.cpp:809:3: error: ‘di_vfree’ was not declared in this scope
+  809 |   di_vfree(&diEncryptedData);
+      |   ^~~~~~~~
+src/bangheera.cpp:820:34: error: ‘class asmjit::x86::Assembler’ has no member named ‘getCodeSize’
+  820 |   unsigned long dwOutputSize = a.getCodeSize();
+      |                                  ^~~~~~~~~~~
+src/bangheera.cpp:823:3: error: ‘PVOID’ was not declared in this scope
+  823 |   PVOID lpPolymorphicCode = a.make();
+      |   ^~~~~
+src/bangheera.cpp:826:3: error: ‘DATA_ITEM’ was not declared in this scope
+  826 |   DATA_ITEM diOutput;
+      |   ^~~~~~~~~
+src/bangheera.cpp:829:14: error: ‘diOutput’ was not declared in this scope; did you mean ‘regOutput’?
+  829 |   di_valloc(&diOutput, dwOutputSize);
+      |              ^~~~~~~~
+      |              regOutput
+src/bangheera.cpp:829:3: error: ‘di_valloc’ was not declared in this scope; did you mean ‘valloc’?
+  829 |   di_valloc(&diOutput, dwOutputSize);
+      |   ^~~~~~~~~
+      |   valloc
+src/bangheera.cpp:835:28: error: ‘lpPolymorphicCode’ was not declared in this scope
+  835 |     memcpy(diOutput.lpPtr, lpPolymorphicCode, dwOutputSize);
+      |                            ^~~~~~~~~~~~~~~~~
+src/bangheera.cpp:842:5: error: ‘MemoryManager’ has not been declared
+  842 |     MemoryManager::getGlobal()->free(lpPolymorphicCode);
+      |     ^~~~~~~~~~~~~
+src/bangheera.cpp:846:5: error: ‘MemoryManager’ has not been declared
+  846 |     MemoryManager::getGlobal()->free(lpPolymorphicCode);
+      |     ^~~~~~~~~~~~~
+src/bangheera.cpp:846:38: error: ‘lpPolymorphicCode’ was not declared in this scope
+  846 |     MemoryManager::getGlobal()->free(lpPolymorphicCode);
+      |                                      ^~~~~~~~~~~~~~~~~
+src/bangheera.cpp:848:5: error: return-statement with no value, in function returning ‘int’ [-fpermissive]
+  848 |     return MUTAGEN_ERR_MEMORY;
+      |     ^~~~~~
+src/bangheera.cpp:857:3: error: return-statement with no value, in function returning ‘int’ [-fpermissive]
+  857 |   return MUTAGEN_ERR_SUCCESS;
+      |   ^~~~~~
+src/bangheera.cpp: At global scope:
+src/bangheera.cpp:865:9: error: ‘usigned’ does not name a type; did you mean ‘signed’?
+  865 | typedef usigned int(__stdcall *DecryptionProc)(PVOID);
+      |         ^~~~~~~
+      |         signed
+src/bangheera.cpp:867:13: error: expected initializer before ‘main’
+  867 | int __cdecl main()
+      |             ^~~~
+In file included from src/../lib/./core/archtraits.h:28,
+                 from src/../lib/./core.h:2009,
+                 from src/../lib/asmjit.h:27,
+                 from src/bangheera.cpp:6:
+src/../lib/./core/../core/operand.h: In instantiation of ‘constexpr asmjit::Imm::Imm(const T&, uint32_t) [with T = asmjit::x86::Reg; uint32_t = unsigned int]’:
+src/bangheera.cpp:234:18:   required from here
+src/../lib/./core/../core/operand.h:1319:37: error: invalid cast from type ‘const asmjit::x86::Reg’ to type ‘int64_t’ {aka ‘long int’}
+ 1319 |               Support::unpackU32At0(int64_t(val)),
+      |                                     ^~~~~~~~~~~~
+src/../lib/./core/../core/operand.h:1320:37: error: invalid cast from type ‘const asmjit::x86::Reg’ to type ‘int64_t’ {aka ‘long int’}
+ 1320 |               Support::unpackU32At1(int64_t(val))) {}
+      |                                     ^~~~~~~~~~~~
+make: *** [Makefile:22: bangheera] Error 1

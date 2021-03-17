@@ -1,19 +1,26 @@
 #include "bangheera.hpp"
 #include <stdio.h>
+#include <stdlib.h> 
 #include <string.h>
 #include <curses.h>
 
-#include "../lib/asmjit/src/asmjit/asmjit.h"
+// shuffle algorithm example
+#include <iostream>     // std::cout
+#include <algorithm>    // std::shuffle
+#include <array>        // std::array
+#include <random>       // std::default_random_engine
+#include <chrono>       // std::chrono::system_clock
+
+#include "../lib/asmjit.h"
 
 #define ASMJIT_EMBED
-#define ASMJIT_STATIC
 
 
 // https://github.com/niosus/EasyClangComplete
 
 // types problem: https://stackoverflow.com/questions/16297073/win32-data-types-equivalant-in-linux
 
-
+using namespace asmjit;
 
 
 class CMutagenSPE
@@ -37,7 +44,7 @@ private:
   typedef struct _SPE_OUTPUT_REGS {
 
     // target register
-    asmjit::x86::GPReg regDst;
+    asmjit::x86::Gp regDst;
 
     // value to write in this register
     unsigned long dwValue;
@@ -53,8 +60,8 @@ private:
     // and the value in dwCryptValue
     int bCryptWithReg;
 
-    asmjit::GPReg regDst;
-    asmjit::GPReg regSrc;
+    asmjit::x86::Gp regDst;
+    asmjit::x86::Gp regSrc;
 
     // encryption operation
     unsigned char cCryptOp;
@@ -74,7 +81,7 @@ private:
   };
 
   // buffer with the encryption operations
-  DATA_ITEM diCryptOps;
+  char *diCryptOps;
 
   // pointer to the table of encryption
   // operations
@@ -84,7 +91,7 @@ private:
   unsigned long dwCryptOpsCount;
 
   // pointer to the encrypted data block
-  DATA_ITEM diEncryptedData;
+  char *diEncryptedData;
 
   // number of blocks of encrypted data
   unsigned long dwEncryptedBlocks;
@@ -93,38 +100,38 @@ private:
   unsigned long dwEncryptionKey;
 
   // asmjit Assembler instance
-  x86::Assembler a;
+  asmjit::x86::Assembler a;
 
   // the register which will store a pointer
   // to the data which is to be decrypted
-  asmjit::GPReg regSrc;
+  asmjit::x86::Gp regSrc;
 
   // the register which will store a pointer
   // to the output buffer
-  asmjit::GPReg regDst;
+  asmjit::x86::Gp regDst;
 
   // the register which hold the size of the
   // encrypted data
-  asmjit::GPReg regSize;
+  asmjit::x86::Gp regSize;
 
   // the register with the encryption key
-  asmjit::GPReg regKey;
+  asmjit::x86::Gp regKey;
 
   // the register on which the decryption
   // instructions will operate
-  asmjit::GPReg regData;
+  asmjit::x86::Gp regData;
 
   // the preserved registers (ESI EDI EBX in random order)
-  asmjit::GPReg regSafe1, regSafe2, regSafe3;
+  asmjit::x86::Gp regSafe1, regSafe2, regSafe3;
 
   // the delta_offset label
   Label lblDeltaOffset;
 
   // the position of the delta offset
-  sysint_t posDeltaOffset;
+  size_t posDeltaOffset;
 
   // the relative address of the encrypted data
-  sysint_t posSrcPtr;
+  size_t posSrcPtr;
 
   // the size of the unused code between delta
   // offset and the instructions which get that
@@ -162,11 +169,18 @@ private:
 
 void CMutagenSPE::RandomizeRegisters()
 {
+
   // set random registers
-  asmjit::GPReg cRegsGeneral[] = { eax, ecx, ebx, edx, esi, edi };
+  //asmjit::x86::Gp cRegsGeneral[] = { asmjit::x86::regs::eax, asmjit::x86::regs::ecx, asmjit::x86::regs::ebx, asmjit::x86::regs::edx, asmjit::x86::regs::esi, asmjit::x86::regs::edi };
+  asmjit::x86::Gp cRegsGeneral[] =  {asmjit::x86::regs::eax, asmjit::x86::regs::ecx, asmjit::x86::regs::ebx, asmjit::x86::regs::edx, asmjit::x86::regs::esi, asmjit::x86::regs::edi};
+
+  // obtain a time-based seed:
+  //unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 
   // shuffle the order of registers in the array
-  mixup_array(cRegsGeneral, _countof(cRegsGeneral));
+  //mixup_array(cRegsGeneral, _countof(cRegsGeneral));
+  //shuffle (cRegsGeneral.begin(), cRegsGeneral.end(), std::default_random_engine(seed));
+  std::random_shuffle(&cRegsGeneral[0], &cRegsGeneral[6]);
 
   // the register which will contain
   // a pointer to the encrypted data
@@ -192,10 +206,16 @@ void CMutagenSPE::RandomizeRegisters()
 
   // set the register whose values will be
   // preserved across function invocations
-  asmjit::GPReg cRegsSafe[] = { esi, edi, ebx };
+  // asmjit::x86::Gp cRegsSafe[] = { asmjit::x86::regs::esi, asmjit::x86::regs::edi, asmjit::x86::regs::ebx };
+  asmjit::x86::Gp cRegsSafe[] = {asmjit::x86::regs::eax, asmjit::x86::regs::ecx, asmjit::x86::regs::ebx, asmjit::x86::regs::edx, asmjit::x86::regs::esi, asmjit::x86::regs::edi};
+  
+  // obtain a time-based seed:
+  //seed = std::chrono::system_clock::now().time_since_epoch().count();
 
   // shuffle the order of the registers in the array
-  mixup_array(cRegsSafe, _countof(cRegsSafe));
+  // mixup_array(cRegsSafe, _countof(cRegsSafe));
+  //shuffle (cRegsSafe.begin(), cRegsSafe.end(), std::default_random_engine(seed));
+  std::random_shuffle(&cRegsSafe[0], &cRegsSafe[6]);
 
   regSafe1 = cRegsSafe[0];
   regSafe2 = cRegsSafe[1];
@@ -214,10 +234,10 @@ void CMutagenSPE::GeneratePrologue()
   // function prologue
   // first the original value of EBP is saved
   // so we can use EBP to refer to the stack frame
-  if (rnd_bin() == 0)
+  if (rand()%2 == 0)
   {
-    a.push(ebp);
-    a.mov(ebp,esp);
+    a.push(asmjit::x86::regs::ebp);
+    a.mov(asmjit::x86::regs::ebp,asmjit::x86::regs::esp);
   }
   else
   {
@@ -239,7 +259,7 @@ void CMutagenSPE::GeneratePrologue()
   // into our randomly-selected register regDst
   // (this is the only parameter to the function,
   // passed on the stack)
-  a.mov(regDst, dword_ptr(ebp, 0x08 + (4 * 0)));
+  a.mov(regDst, dword_ptr(asmjit::x86::regs::ebp, 0x08 + (4 * 0)));
 }
 
 
@@ -276,7 +296,7 @@ void CMutagenSPE::GenerateDeltaOffset()
   // generate 'call delta_offset'
   a.call(lblDeltaOffset);
 
-  sysint_t posUnusedCodeStart = a.getOffset();
+  size_t posUnusedCodeStart = a.offset();
 
   // in order to avoid getting flagged by
   // antivirus software, we avoid the typical
@@ -285,13 +305,13 @@ void CMutagenSPE::GenerateDeltaOffset()
   // between, in our case a sequence that looks
   // like the normal code which returns from
   // a function
-  if (rnd_bin() == 0)
+  if (rand()%2 == 0)
   {
-    a.mov(eax, imm(1));
+    a.mov(asmjit::x86::regs::eax, imm(1));
   }
   else
   {
-    a.xor_(eax,eax);
+    a.xor_(asmjit::x86::regs::eax, asmjit::x86::regs::eax);
   }
 
   a.leave();
@@ -301,12 +321,12 @@ void CMutagenSPE::GenerateDeltaOffset()
   // i.e. the difference between the current
   // position and the beginning of the
   // unused code
-  dwUnusedCodeSize = static_cast<unsigned long>(a.getOffset() - posUnusedCodeStart);
+  dwUnusedCodeSize = static_cast<unsigned long>(a.offset() - posUnusedCodeStart);
 
   // put the label "delta_offset:" here
   a.bind(lblDeltaOffset);
 
-  posDeltaOffset = a.getOffset();
+  posDeltaOffset = a.offset();
 
   // instead of the pop instruction, we will
   // use a different method of reading the
@@ -314,8 +334,8 @@ void CMutagenSPE::GenerateDeltaOffset()
   // antivirus programs
 
   //a.pop(regSrc);
-  a.mov(regSrc, dword_ptr(esp));
-  a.add(esp, imm(sizeof(unsigned long)));
+  a.mov(regSrc, dword_ptr(asmjit::x86::regs::esp));
+  a.add(asmjit::x86::regs::esp, imm(sizeof(unsigned long)));
 
   // the address of the label "delta_offset:"
   // will now be in the regSrc register;
@@ -330,7 +350,7 @@ void CMutagenSPE::GenerateDeltaOffset()
   // save the position of the previous unsigned long
   // so that we can later update it to contain
   // the length of the remainder of the function
-  posSrcPtr = a.getOffset() - sizeof(unsigned long);
+  posSrcPtr = a.offset() - sizeof(unsigned long);
 }
 
 ///////////////////////////////////////////////////////////
@@ -346,10 +366,11 @@ void CMutagenSPE::EncryptInputBuffer(unsigned char * lpInputBuffer, \
                                      unsigned long dwMaxInstr)
 {
   // generate an encryption key
-  dwEncryptionKey = rnd_dword();
+  dwEncryptionKey = (unsigned long) rand();
 
   // round up the size of the input buffer
-  unsigned long dwAlignedSize = align_dword(dwInputBuffer);
+  unsigned long dwAlignedSize __attribute__ ((aligned)) = dwInputBuffer;
+  
 
   // number of blocks to encrypt
   // divide the size of the input data
@@ -361,28 +382,29 @@ void CMutagenSPE::EncryptInputBuffer(unsigned char * lpInputBuffer, \
   // allocate memory for the output data
   // (the size will be rounded to the
   // block size)
-  di_valloc(&diEncryptedData, dwAlignedSize);
+  posix_memalign(&diEncryptedData, 4, dwAlignedSize);
 
-  unsigned long * lpdwOutputBuffer = reinterpret_cast<unsigned long *>(diEncryptedData.lpPtr);
+  unsigned long * lpdwOutputBuffer = reinterpret_cast<unsigned long *>(diEncryptedData);
 
   // randomly select the number of encryption instructions
-  dwCryptOpsCount = rnd_range(dwMinInstr, dwMaxInstr);
+  dwCryptOpsCount = dwMinInstr + rand() % (( dwMaxInstr + 1 ) - dwMinInstr);
 
   // allocate memory for an array which will
   // record information about the sequence of
   // encryption instructions
-  di_valloc(&diCryptOps, dwCryptOpsCount * sizeof(SPE_CRYPT_OP));
+  posix_memalign(&diCryptOps, 4, dwCryptOpsCount * sizeof(SPE_CRYPT_OP));
+
 
   // set up a direct pointer to this table
   // in a helper variable
-  lpcoCryptOps = reinterpret_cast<P_SPE_CRYPT_OP>(diCryptOps.lpPtr);
+  lpcoCryptOps = reinterpret_cast<P_SPE_CRYPT_OP>(diCryptOps);
 
   // generate encryption instructions and their type
   for (unsigned long i = 0; i < dwCryptOpsCount; i++)
   {
     // will the instruction perform an operation
     // combining regData and regKey?
-    lpcoCryptOps[i].bCryptWithReg = rnd_bool();
+    lpcoCryptOps[i].bCryptWithReg = rand()%2;
 
     // the register we are operating on
     lpcoCryptOps[i].regDst = regData;
@@ -392,7 +414,7 @@ void CMutagenSPE::EncryptInputBuffer(unsigned char * lpInputBuffer, \
     // will be used in the operation
     if (lpcoCryptOps[i].bCryptWithReg == FALSE)
     {
-      lpcoCryptOps[i].dwCryptValue = rnd_dword();
+      lpcoCryptOps[i].dwCryptValue = (unsigned long) rand();
     }
     else
     {
@@ -400,7 +422,7 @@ void CMutagenSPE::EncryptInputBuffer(unsigned char * lpInputBuffer, \
     }
 
     // randomly choose the type of encryption instruction
-    lpcoCryptOps[i].cCryptOp = static_cast<unsigned char>(rnd_range(SPE_CRYPT_OP_ADD, SPE_CRYPT_OP_NEG));
+    lpcoCryptOps[i].cCryptOp = static_cast<unsigned char>(dwMinInstr + rand() % (( dwMaxInstr + 1 ) - dwMinInstr));
   }
 
   // encrypt the input data according to the
@@ -462,11 +484,11 @@ void CMutagenSPE::SetupDecryptionKeys()
 {
   // set up a decryption key in the regKey
   // register, which will itself be encrypted
-  unsigned long dwKeyModifier = rnd_dword();
+  unsigned long dwKeyModifier = (unsigned long) rand();
 
   // randomly generate instructions to set up
   // the decryption key
-  switch(rnd_max(2))
+  switch(rand()%3)
   {
   // mov regKey,dwKey - dwMod
   // add regKey,dwMod
@@ -518,7 +540,7 @@ void CMutagenSPE::GenerateDecryption()
   // decryption instruction in turn (reversing the
   // order and the operations that were used for
   // encryption!)
-  for (unsigned long i = dwCryptOpsCount - 1; i != -1L; i--)
+  for (int i = dwCryptOpsCount - 1; i != -1; i--)
   {
     // encryption was done either with the key
     // in register regKey, or a constant value,
@@ -606,7 +628,7 @@ void CMutagenSPE::SetupOutputRegisters(SPE_OUTPUT_REGS *regOutput, unsigned long
 
   // shuffle the order in which the registers
   // will be set up
-  mixup_array(regOutput, dwCount);
+  std::random_shuffle(&regOutput[0], &regOutput[dwCount]);
 
   // generate instructions to set up the
   // output registers
@@ -633,15 +655,15 @@ void CMutagenSPE::GenerateEpilogue(unsigned long dwParamCount)
   a.pop(regSafe1);
 
   // restore the value of EBP
-  if (rnd_bin() == 0)
+  if (rand()%2 == 0)
   {
     a.leave();
   }
   else
   {
     // equivalent to "leave"
-    a.mov(esp,ebp);
-    a.pop(ebp);
+    a.mov(asmjit::x86::regs::esp,asmjit::x86::regs::ebp);
+    a.pop(asmjit::x86::regs::ebp);
   }
 
   // return to the code which called
@@ -662,7 +684,8 @@ void CMutagenSPE::GenerateEpilogue(unsigned long dwParamCount)
 void CMutagenSPE::AlignDecryptorBody(unsigned long dwAlignment)
 {
   // take the current size of the code
-  unsigned long dwCurrentSize = a.getCodeSize();
+  // Might have to add a Codehold variable to the program and use that variable to get code size
+  unsigned long dwCurrentSize = a.codeSize();
 
   // find the number of bytes that would
   // align the size to a multiple of the
@@ -676,7 +699,7 @@ void CMutagenSPE::AlignDecryptorBody(unsigned long dwAlignment)
   }
 
   // add padding instructions (int3 or nop)
-  if (rnd_bin() == 0)
+  if (rand()%2 == 0)
   {
     while (dwAlignmentSize--) a.int3();
   }
@@ -696,7 +719,7 @@ void CMutagenSPE::AlignDecryptorBody(unsigned long dwAlignment)
 
 void CMutagenSPE::UpdateDeltaOffsetAddressing()
 {
-  unsigned long dwAdjustSize = static_cast<unsigned long>(a.getOffset() - posDeltaOffset);
+  unsigned long dwAdjustSize = static_cast<unsigned long>(a.offset() - posDeltaOffset);
 
   // correct the instruction which sets up
   // a pointer to the encrypted data block
@@ -719,7 +742,7 @@ void CMutagenSPE::UpdateDeltaOffsetAddressing()
 
 void CMutagenSPE::AppendEncryptedData()
 {
-  unsigned long * lpdwEncryptedData = reinterpret_cast<unsigned long *>(diEncryptedData.lpPtr);
+  unsigned long * lpdwEncryptedData = reinterpret_cast<unsigned long *>(diEncryptedData);
 
   // place the encrypted data buffer
   // at the end of the decryption function
@@ -782,15 +805,15 @@ int CMutagenSPE::PolySPE(unsigned char * lpInputBuffer, \
   GenerateDecryption();
 
   // set up the values of the output registers
-  SPE_OUTPUT_REGS regOutput[] = { { eax, dwInputBuffer } };
-  SetupOutputRegisters(regOutput, _countof(regOutput));
+  SPE_OUTPUT_REGS regOutput[] = { { asmjit::x86::regs::eax, dwInputBuffer } };
+  SetupOutputRegisters(regOutput, 2);
 
   // generate function epilogue
   GenerateEpilogue(1L);
 
   // align the size of the function to a multiple
   // of 4 or 16
-  AlignDecryptorBody(rnd_bin() == 0 ? 4L : 16L);
+  AlignDecryptorBody(rand()%2 == 0 ? 4L : 16L);
 
   // fix up any instructions that use delta offset addressing
   UpdateDeltaOffsetAddressing();
@@ -805,10 +828,10 @@ int CMutagenSPE::PolySPE(unsigned char * lpInputBuffer, \
   ///////////////////////////////////////////////////////////
 
   // free the encrypted data buffer
-  di_vfree(&diEncryptedData);
+  free(&diEncryptedData);
 
   // free the array of encryption pseudoinstructions
-  di_vfree(&diCryptOps);
+  free(&diCryptOps);
 
   ///////////////////////////////////////////////////////////
   //
@@ -819,13 +842,13 @@ int CMutagenSPE::PolySPE(unsigned char * lpInputBuffer, \
   unsigned long dwOutputSize = a.getCodeSize();
 
   // assemble the code of the polymorphic function (this resolves jumps and labels)
-  PVOID lpPolymorphicCode = a.make();
+  void *lpPolymorphicCode = a.make();
 
   // this struct describes the allocated memory block
-  DATA_ITEM diOutput;
+  char *diOutput;
 
   // allocate memory (with execute permissions) for the output buffer
-  di_valloc(&diOutput, dwOutputSize);
+  posix_memalign(&diOutput, dwOutputSize);
 
   // check that allocation was successful
   if (diOutput.lpPtr != NULL)
@@ -861,9 +884,9 @@ int CMutagenSPE::PolySPE(unsigned char * lpInputBuffer, \
 
 
 // declare the prototype of the decryption procedure
-typedef usigned int(__stdcall *DecryptionProc)(PVOID);
+typedef unsigned int(__stdcall *DecryptionProc)(PVOID);
 
-int __cdecl main()
+int main()
 {
   // input data (in this case a simple string,
   // although it could be any data buffer)
@@ -883,7 +906,7 @@ int __cdecl main()
 
   // encrypt the input data and dynamically
   // generate a decryption function
-  speEngine->PolySPE(reinterpret_cast<PBYTE>(szHelloWorld), \
+  speEngine->PolySPE(reinterpret_cast<unsigned char*>(szHelloWorld), \
                      sizeof(szHelloWorld), \
                      &lpcDecryptionProc, \
                      &dwDecryptionProcSize);

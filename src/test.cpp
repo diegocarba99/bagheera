@@ -1,7 +1,7 @@
-#include "../lib/asmjit/src/asmjit/asmjit.h"
+#include "../lib/asmjit.h"
 #include <stdio.h>
 
-#define ASMJIT_STATIC
+//#define ASMJIT_STATIC
 
 using namespace asmjit;
 
