@@ -5,15 +5,21 @@
 Developed in `C++`, can be used to award polymorphic features to any piece of text. Code and payloads can be encrypted and decrypted using **Bagheera**.
 
 ## TODO
-- [ ] Add `JitRuntime` and `CodeHolder` variables if basic code doesnt work. Examples in AsmJit documentation webpage.  
+- [x] Add `JitRuntime` and `CodeHolder` variables if basic code doesnt work. Examples in AsmJit documentation webpage.  
+- [x] Make it compile for the first time
 
-## Features
+## Advanced features
 
 Some of  Bagheera's features are the following:
 
 - Code polymorphism
-- Feature_1
-- Feature_2
+- White noise addition in random places
+- Equivalent instructions selected at random. For example, we can do `add` or `neg` and then `sub`.
+- The above point can be merged with random execution branches that perform the same job and converge in the same place.
+- Changes and randomization of calling convention. 
+- Random jumps to un-linearize the execution.
+- Multilayer encryption **???**
+
 
 ## Interesting readings
 
