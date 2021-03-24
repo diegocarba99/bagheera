@@ -14,6 +14,7 @@
 #include "../lib/asmjit.h"
 
 #define ASMJIT_EMBED
+#define BLOCK_SIZE 128
 
 
 // https://github.com/niosus/EasyClangComplete
@@ -99,8 +100,12 @@ private:
   // encryption key
   unsigned long dwEncryptionKey;
 
+  asmjit::JitRuntime rt;                    // Create a runtime specialized for JIT.
+  asmjit::CodeHolder code;                  // Create a CodeHolder.
+  
   // asmjit Assembler instance
   asmjit::x86::Assembler a;
+
 
   // the register which will store a pointer
   // to the data which is to be decrypted
@@ -345,7 +350,7 @@ void CMutagenSPE::GenerateDeltaOffset()
   // for now we use the value 987654321 to
   // ensure asmjit generates the long form of
   // the "add" instruction
-  a.add(regSrc, imm(987654321));
+  a.long_().add(regSrc, imm(987654321));
 
   // save the position of the previous unsigned long
   // so that we can later update it to contain
@@ -382,7 +387,7 @@ void CMutagenSPE::EncryptInputBuffer(unsigned char * lpInputBuffer, \
   // allocate memory for the output data
   // (the size will be rounded to the
   // block size)
-  posix_memalign(&diEncryptedData, 4, dwAlignedSize);
+  posix_memalign((void **)&diEncryptedData, BLOCK_SIZE, dwAlignedSize);
 
   unsigned long * lpdwOutputBuffer = reinterpret_cast<unsigned long *>(diEncryptedData);
 
@@ -392,7 +397,7 @@ void CMutagenSPE::EncryptInputBuffer(unsigned char * lpInputBuffer, \
   // allocate memory for an array which will
   // record information about the sequence of
   // encryption instructions
-  posix_memalign(&diCryptOps, 4, dwCryptOpsCount * sizeof(SPE_CRYPT_OP));
+  posix_memalign((void **)&diCryptOps, BLOCK_SIZE, dwCryptOpsCount * sizeof(SPE_CRYPT_OP));
 
 
   // set up a direct pointer to this table
@@ -683,14 +688,16 @@ void CMutagenSPE::GenerateEpilogue(unsigned long dwParamCount)
 
 void CMutagenSPE::AlignDecryptorBody(unsigned long dwAlignment)
 {
+  /*
   // take the current size of the code
   // Might have to add a Codehold variable to the program and use that variable to get code size
-  unsigned long dwCurrentSize = a.codeSize();
+  unsigned long dwCurrentSize = code.codeSize();
 
   // find the number of bytes that would
   // align the size to a multiple of the
   // supplied size (e.g. 4)
-  unsigned long dwAlignmentSize = align_bytes(dwCurrentSize, dwAlignment) - dwCurrentSize;
+  //unsigned long dwAlignmentSize = align_bytes(dwCurrentSize, dwAlignment) - dwCurrentSize;
+  unsigned long dwAlignmentSize = AlignNode::alignment();
 
   // check if any alignment is required
   if (dwAlignmentSize == 0)
@@ -707,6 +714,7 @@ void CMutagenSPE::AlignDecryptorBody(unsigned long dwAlignment)
   {
     while (dwAlignmentSize--) a.nop();
   }
+  */
 }
 
 
@@ -719,7 +727,10 @@ void CMutagenSPE::AlignDecryptorBody(unsigned long dwAlignment)
 
 void CMutagenSPE::UpdateDeltaOffsetAddressing()
 {
-  unsigned long dwAdjustSize = static_cast<unsigned long>(a.offset() - posDeltaOffset);
+  /*
+    reference: https://asmjit.com/doc/classasmjit_1_1x86_1_1Assembler.html
+    section: Using x86::Assembler as Code-Patcher
+  */
 
   // correct the instruction which sets up
   // a pointer to the encrypted data block
@@ -729,7 +740,16 @@ void CMutagenSPE::UpdateDeltaOffsetAddressing()
   // register, and must be updated by the
   // size of the remainder of the function
   // after the delta_offset label
-  a.setDWordAt(posSrcPtr, dwAdjustSize + dwUnusedCodeSize);
+  // a.setDWordAt(posSrcPtr, dwAdjustSize + dwUnusedCodeSize);
+  
+  size_t current_position = a.offset(); // Get current position
+  
+  unsigned long dwAdjustSize = static_cast<unsigned long>(current_position - posDeltaOffset); // Calculate the offset to the encrypted data
+  
+  a.setOffset(posSrcPtr); // Go to place where reference to encrypted data is made
+  a.long_().add(regSrc, dwAdjustSize + dwUnusedCodeSize); // Update the instruction with proper direction
+  
+  a.setOffset(current_position); // Return to position we where in previous to the patch
 }
 
 
@@ -749,7 +769,9 @@ void CMutagenSPE::AppendEncryptedData()
   // (in 4-unsigned char blocks)
   for (unsigned long i = 0; i < dwEncryptedBlocks; i++)
   {
-    a._emitDWord(lpdwEncryptedData[i]);
+    // May need to change to _emit()
+    a.emit(lpdwEncryptedData[i]);
+
   }
 }
 
@@ -777,6 +799,9 @@ int CMutagenSPE::PolySPE(unsigned char * lpInputBuffer, \
   {
     return MUTAGEN_ERR_PARAMS;
   }
+
+  code.init(rt.environment());
+  a.onAttach(&code);
 
   // randomly select registers
   RandomizeRegisters();
@@ -839,33 +864,35 @@ int CMutagenSPE::PolySPE(unsigned char * lpInputBuffer, \
   //
   ///////////////////////////////////////////////////////////
 
-  unsigned long dwOutputSize = a.getCodeSize();
+  unsigned long dwOutputSize = code.codeSize();
 
   // assemble the code of the polymorphic function (this resolves jumps and labels)
-  void *lpPolymorphicCode = a.make();
+  void *lpPolymorphicCode;
+  Error err = rt.add(&lpPolymorphicCode, &code);
+  if (err) return 1;                // Handle a possible error returned by AsmJit.
 
   // this struct describes the allocated memory block
   char *diOutput;
 
   // allocate memory (with execute permissions) for the output buffer
-  posix_memalign(&diOutput, dwOutputSize);
+  posix_memalign((void **)&diOutput, BLOCK_SIZE, dwOutputSize);
 
   // check that allocation was successful
-  if (diOutput.lpPtr != NULL)
+  if (diOutput != NULL)
   {
     // copy the generated code of the decryption function
-    memcpy(diOutput.lpPtr, lpPolymorphicCode, dwOutputSize);
+    memcpy(diOutput, lpPolymorphicCode, dwOutputSize);
 
     // provide the output buffer and code size to
     // this function's caller
-    *lpOutputBuffer = diOutput.lpPtr;
+    *lpOutputBuffer = (unsigned char *)diOutput;
     *lpdwOutputSize = dwOutputSize;
 
-    MemoryManager::getGlobal()->free(lpPolymorphicCode);
+    rt.release(lpPolymorphicCode);
   }
   else
   {
-    MemoryManager::getGlobal()->free(lpPolymorphicCode);
+    rt.release(lpPolymorphicCode);
 
     return MUTAGEN_ERR_MEMORY;
   }
@@ -884,10 +911,11 @@ int CMutagenSPE::PolySPE(unsigned char * lpInputBuffer, \
 
 
 // declare the prototype of the decryption procedure
-typedef unsigned int(__stdcall *DecryptionProc)(PVOID);
+//typedef unsigned int(__stdcall *DecryptionProc)(PVOID);
 
 int main()
 {
+  /*
   // input data (in this case a simple string,
   // although it could be any data buffer)
   char szHelloWorld[] = "Hello world!";
@@ -924,7 +952,7 @@ int main()
   DecryptionProc lpDecryptionProc = reinterpret_cast<DecryptionProc>(lpcDecryptionProc);
 
   // the output buffer for the decrypted data
-  char szOutputBuffer[128] = { 0xCC };
+  char szOutputBuffer[128];
 
   // call the decryption function via its
   // function pointer
@@ -935,4 +963,5 @@ int main()
   printf(szOutputBuffer);
 
   return 0;
+  */
 }
