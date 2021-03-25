@@ -14,7 +14,7 @@ Some of  Bagheera's features are the following:
 
 - Code polymorphism
 - White noise addition in random places
-- Equivalent instructions selected at random. For example, we can do `add` or `neg` and then `sub`.
+- Equivalent instructions selected at random. For example, we can do `add` or `neg` and then `sub`. Have a large set of equivalent instructions and select at random using (maybe) this [algo](https://en.wikipedia.org/wiki/Multiply-with-carry_pseudorandom_number_generator)
 - The above point can be merged with random execution branches that perform the same job and converge in the same place.
 - Changes and randomization of calling convention. 
 - Random jumps to un-linearize the execution.
