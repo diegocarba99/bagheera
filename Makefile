@@ -8,7 +8,8 @@ CC = g++
 CFLAGS  = -g -Wall -std=c++11 -DASMJIT_STATIC
 
 # The build target
-TARGET = bangheera
+TARGET = main
+ENGINE = bagheera
 
 x86TEST = x86_assembler_test
 #x86TEST = test
@@ -16,17 +17,22 @@ x86TEST = x86_assembler_test
 SRC = src/
 LIB = lib/
 
+ULIMIT_CONF = ulimit -c unlimited
+
 all: $(TARGET)
 
-$(TARGET): $(SRC)$(TARGET).cpp
-	$(CC) -o $(SRC)$(TARGET) $(SRC)$(TARGET).cpp $(CFLAGS) -L$(LIB) -lasmjit 
+$(TARGET): $(SRC)$(ENGINE).cpp $(SRC)$(ENGINE).hpp
+	$(ULIMIT_CONF)
+	$(CC) -o $(TARGET) $(TARGET).cpp $(SRC)$(ENGINE).cpp $(CFLAGS) -L$(LIB) -lasmjit 
 
 make single:
-	$(CC) -o $(SRC)$(TARGET) $(SRC)$(TARGET).cpp $(CFLAGS) -L$(LIB) -lasmjit
+	$(CC) -o $(TARGET) $(TARGET).cpp $(CFLAGS) -L$(LIB) -lasmjit
 
 test:
-	$(CC) -o $(SRC)$(x86TEST) $(SRC)$(x86TEST).cpp $(CFLAGS) -L$(LIB) -lasmjit 
+	$(CC) -o $(x86TEST) $(x86TEST).cpp $(CFLAGS) -L$(LIB) -lasmjit 
 
+run:
+	./$(TARGET)
 
 clean: 
-	$(RM) $(SRC)$(TARGET)
+	$(RM) $(TARGET)

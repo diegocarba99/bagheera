@@ -1,167 +1,10 @@
-#include "bangheera.hpp"
-#include <stdio.h>
-#include <stdlib.h> 
-#include <string.h>
-#include <curses.h>
-
-// shuffle algorithm example
-#include <iostream>     // std::cout
-#include <algorithm>    // std::shuffle
-#include <array>        // std::array
-#include <random>       // std::default_random_engine
-#include <chrono>       // std::chrono::system_clock
-
-#include "../lib/asmjit.h"
-
-#define ASMJIT_EMBED
-#define BLOCK_SIZE 128
-
-
-// https://github.com/niosus/EasyClangComplete
-
-// types problem: https://stackoverflow.com/questions/16297073/win32-data-types-equivalant-in-linux
+#include "includes.hpp"
+#include "bagheera.hpp"
 
 using namespace asmjit;
 
-
-class CMutagenSPE
-{
-public:
-  CMutagenSPE(void);
-  ~CMutagenSPE(void);
-
-  // the main function which performs the
-  // encryption and generates the polymorphic
-  // code
-  int PolySPE(unsigned char * lpInputBuffer, \
-                            unsigned long dwInputBuffer, \
-                            unsigned char * *lpOutputBuffer, \
-                            unsigned long * lpdwOutputSize);
-
-private:
-
-  // a structure describing the values of
-  // the output registers
-  typedef struct _SPE_OUTPUT_REGS {
-
-    // target register
-    asmjit::x86::Gp regDst;
-
-    // value to write in this register
-    unsigned long dwValue;
-
-  } SPE_OUTPUT_REGS, *P_SPE_OUTPUT_REGS;
-
-  // description of an encryption operation
-  typedef struct _SPE_CRYPT_OP {
-
-    // TRUE if the operation is performed
-    // on two registers; FALSE if it is
-    // performed between the target register
-    // and the value in dwCryptValue
-    int bCryptWithReg;
-
-    asmjit::x86::Gp regDst;
-    asmjit::x86::Gp regSrc;
-
-    // encryption operation
-    unsigned char cCryptOp;
-
-    // encryption value
-    unsigned long dwCryptValue;
-
-  } SPE_CRYPT_OP, *P_SPE_CRYPT_OP;
-
-  enum
-  {
-    SPE_CRYPT_OP_ADD = 0,
-    SPE_CRYPT_OP_SUB = 1,
-    SPE_CRYPT_OP_XOR = 2,
-    SPE_CRYPT_OP_NOT = 3,
-    SPE_CRYPT_OP_NEG = 4,
-  };
-
-  // buffer with the encryption operations
-  char *diCryptOps;
-
-  // pointer to the table of encryption
-  // operations
-  P_SPE_CRYPT_OP lpcoCryptOps;
-
-  // count of encryption operations
-  unsigned long dwCryptOpsCount;
-
-  // pointer to the encrypted data block
-  char *diEncryptedData;
-
-  // number of blocks of encrypted data
-  unsigned long dwEncryptedBlocks;
-
-  // encryption key
-  unsigned long dwEncryptionKey;
-
-  asmjit::JitRuntime rt;                    // Create a runtime specialized for JIT.
-  asmjit::CodeHolder code;                  // Create a CodeHolder.
-  
-  // asmjit Assembler instance
-  asmjit::x86::Assembler a;
-
-
-  // the register which will store a pointer
-  // to the data which is to be decrypted
-  asmjit::x86::Gp regSrc;
-
-  // the register which will store a pointer
-  // to the output buffer
-  asmjit::x86::Gp regDst;
-
-  // the register which hold the size of the
-  // encrypted data
-  asmjit::x86::Gp regSize;
-
-  // the register with the encryption key
-  asmjit::x86::Gp regKey;
-
-  // the register on which the decryption
-  // instructions will operate
-  asmjit::x86::Gp regData;
-
-  // the preserved registers (ESI EDI EBX in random order)
-  asmjit::x86::Gp regSafe1, regSafe2, regSafe3;
-
-  // the delta_offset label
-  Label lblDeltaOffset;
-
-  // the position of the delta offset
-  size_t posDeltaOffset;
-
-  // the relative address of the encrypted data
-  size_t posSrcPtr;
-
-  // the size of the unused code between delta
-  // offset and the instructions which get that
-  // value from the stack
-  unsigned long dwUnusedCodeSize;
-
-  // helper methods
-  void RandomizeRegisters();
-  void GeneratePrologue();
-  void GenerateDeltaOffset();
-  void EncryptInputBuffer(unsigned char * lpInputBuffer, \
-                          unsigned long dwInputBuffer, \
-                          unsigned long dwMinInstr, \
-                          unsigned long dwMaxInstr);
-  void SetupDecryptionKeys();
-  void GenerateDecryption();
-  void SetupOutputRegisters(SPE_OUTPUT_REGS *regOutput, \
-                            unsigned long dwCount);
-  void GenerateEpilogue(unsigned long dwParamCount);
-  void AlignDecryptorBody(unsigned long dwAlignment);
-  void AppendEncryptedData();
-  void UpdateDeltaOffsetAddressing();
-};
-
-
+// types problem: https://stackoverflow.com/questions/16297073/win32-data-types-equivalant-in-linux
+// https://github.com/niosus/EasyClangComplete
 
 
 
@@ -174,7 +17,7 @@ private:
 
 void CMutagenSPE::RandomizeRegisters()
 {
-
+  std::cout << "PE: Randomizing registers\n";
   // set random registers
   //asmjit::x86::Gp cRegsGeneral[] = { asmjit::x86::regs::eax, asmjit::x86::regs::ecx, asmjit::x86::regs::ebx, asmjit::x86::regs::edx, asmjit::x86::regs::esi, asmjit::x86::regs::edi };
   asmjit::x86::Gp cRegsGeneral[] =  {asmjit::x86::regs::eax, asmjit::x86::regs::ecx, asmjit::x86::regs::ebx, asmjit::x86::regs::edx, asmjit::x86::regs::esi, asmjit::x86::regs::edi};
@@ -236,26 +79,34 @@ void CMutagenSPE::RandomizeRegisters()
 
 void CMutagenSPE::GeneratePrologue()
 {
+
+  std::cout << "PE: Generating prologue\n";
   // function prologue
   // first the original value of EBP is saved
   // so we can use EBP to refer to the stack frame
-  if (rand()%2 == 0)
+  std::cout << "\tPE: saving EBP \n";
+  if (1 == 0)
   {
+    std::cout << "\tPE: method 1... ";
     a.push(asmjit::x86::regs::ebp);
     a.mov(asmjit::x86::regs::ebp,asmjit::x86::regs::esp);
+    std::cout << "DONE\n";
   }
   else
   {
+    std::cout << "\tPE: method 2... ";
     // equivalent to the instructions
     // push ebp
     // mov ebp,esp
     a.enter(imm(0), imm(0));
+    std::cout << "DONE\n";
   }
 
   // if our function is called using the stdcall
   // convention, and modifies ESI, EDI, or EBX,
   // they must be saved at the beginning of
   // the function and restored at the end
+  std::cout << "\tPE: saving stdcall registers\n";
   a.push(regSafe1);
   a.push(regSafe2);
   a.push(regSafe3);
@@ -264,7 +115,9 @@ void CMutagenSPE::GeneratePrologue()
   // into our randomly-selected register regDst
   // (this is the only parameter to the function,
   // passed on the stack)
+  std::cout << "\tPE: loading pointer output buffer\n";
   a.mov(regDst, dword_ptr(asmjit::x86::regs::ebp, 0x08 + (4 * 0)));
+  std::cout << "\tPE: done \n";
 }
 
 
@@ -276,6 +129,8 @@ void CMutagenSPE::GeneratePrologue()
 
 void CMutagenSPE::GenerateDeltaOffset()
 {
+
+  std::cout << "PE: Calculating delta offset\n";
   // generate code which will allow us to
   // obtain a pointer to the encrypted data
   // at the end of the decryption function
@@ -370,6 +225,8 @@ void CMutagenSPE::EncryptInputBuffer(unsigned char * lpInputBuffer, \
                                      unsigned long dwMinInstr, \
                                      unsigned long dwMaxInstr)
 {
+
+  std::cout << "PE: Encrypting input buffer\n";
   // generate an encryption key
   dwEncryptionKey = (unsigned long) rand();
 
@@ -487,6 +344,8 @@ void CMutagenSPE::EncryptInputBuffer(unsigned char * lpInputBuffer, \
 
 void CMutagenSPE::SetupDecryptionKeys()
 {
+
+  std::cout << "PE: Setting up decryption keys\n";
   // set up a decryption key in the regKey
   // register, which will itself be encrypted
   unsigned long dwKeyModifier = (unsigned long) rand();
@@ -527,6 +386,8 @@ void CMutagenSPE::SetupDecryptionKeys()
 
 void CMutagenSPE::GenerateDecryption()
 {
+
+  std::cout << "PE: generating decryption\n";
   // set up the size of the encrypted data
   // (in blocks)
   a.mov(regSize, imm(dwEncryptedBlocks));
@@ -624,6 +485,8 @@ void CMutagenSPE::GenerateDecryption()
 
 void CMutagenSPE::SetupOutputRegisters(SPE_OUTPUT_REGS *regOutput, unsigned long dwCount)
 {
+
+  std::cout << "PE: seting up output registers\n";
   // if there are no output registers to
   // set up, return
   if ((regOutput == NULL) || (dwCount == 0))
@@ -653,6 +516,8 @@ void CMutagenSPE::SetupOutputRegisters(SPE_OUTPUT_REGS *regOutput, unsigned long
 
 void CMutagenSPE::GenerateEpilogue(unsigned long dwParamCount)
 {
+
+  std::cout << "PE: generating epilogue\n";
   // restore the original values of
   // registers ESI EDI EBX
   a.pop(regSafe3);
@@ -688,6 +553,7 @@ void CMutagenSPE::GenerateEpilogue(unsigned long dwParamCount)
 
 void CMutagenSPE::AlignDecryptorBody(unsigned long dwAlignment)
 {
+  std::cout << "PE: aligning decryptor body\n";
   /*
   // take the current size of the code
   // Might have to add a Codehold variable to the program and use that variable to get code size
@@ -727,6 +593,8 @@ void CMutagenSPE::AlignDecryptorBody(unsigned long dwAlignment)
 
 void CMutagenSPE::UpdateDeltaOffsetAddressing()
 {
+
+  std::cout << "PE: update delta offset adress\n";
   /*
     reference: https://asmjit.com/doc/classasmjit_1_1x86_1_1Assembler.html
     section: Using x86::Assembler as Code-Patcher
@@ -762,6 +630,8 @@ void CMutagenSPE::UpdateDeltaOffsetAddressing()
 
 void CMutagenSPE::AppendEncryptedData()
 {
+  std::cout << "PE: append encrypted data\n";
+
   unsigned long * lpdwEncryptedData = reinterpret_cast<unsigned long *>(diEncryptedData);
 
   // place the encrypted data buffer
@@ -788,6 +658,8 @@ int CMutagenSPE::PolySPE(unsigned char * lpInputBuffer, \
                                        unsigned char * *lpOutputBuffer, \
                                        unsigned long * lpdwOutputSize)
 {
+
+  std::cout << "PE: calling main function\n";
   ///////////////////////////////////////////////////////////
   //
   // check input parameters
@@ -800,8 +672,12 @@ int CMutagenSPE::PolySPE(unsigned char * lpInputBuffer, \
     return MUTAGEN_ERR_PARAMS;
   }
 
+  //std::ofstream logfile { "log.asmjit" };
+  logger.setFile(stdout);
+
   code.init(rt.environment());
   a.onAttach(&code);
+  code.setLogger(&logger);     // Attach the `logger` to `code` holder.
 
   // randomly select registers
   RandomizeRegisters();
@@ -906,62 +782,3 @@ int CMutagenSPE::PolySPE(unsigned char * lpInputBuffer, \
   return MUTAGEN_ERR_SUCCESS;
 }
 
-
-
-
-
-// declare the prototype of the decryption procedure
-//typedef unsigned int(__stdcall *DecryptionProc)(PVOID);
-
-int main()
-{
-  /*
-  // input data (in this case a simple string,
-  // although it could be any data buffer)
-  char szHelloWorld[] = "Hello world!";
-
-  // create an instance of the polymorphic
-  // engine
-  CMutagenSPE *speEngine = new CMutagenSPE();
-
-  // a pointer to the generated decryption
-  // function will be placed here
-  unsigned char *lpcDecryptionProc = NULL;
-
-  // the size of the decryption code (and
-  // its encrypted payload) will go here
-  unsigned int dwDecryptionProcSize = 0;
-
-  // encrypt the input data and dynamically
-  // generate a decryption function
-  speEngine->PolySPE(reinterpret_cast<unsigned char*>(szHelloWorld), \
-                     sizeof(szHelloWorld), \
-                     &lpcDecryptionProc, \
-                     &dwDecryptionProcSize);
-
-  // write the generated function to disk
-  FILE *hFile = fopen("polymorphic_code.bin", "wb");
-
-  if (hFile != NULL)
-  {
-    fwrite(lpDecryptionProc, dwDecryptionProcSize, 1, hFile);
-    fclose(hFile);
-  }
-
-  // cast the function pointer to the right type
-  DecryptionProc lpDecryptionProc = reinterpret_cast<DecryptionProc>(lpcDecryptionProc);
-
-  // the output buffer for the decrypted data
-  char szOutputBuffer[128];
-
-  // call the decryption function via its
-  // function pointer
-  unsigned int dwOutputSize = lpDecryptionProc(szOutputBuffer);
-
-  // display the decrypted text - if everything
-  // went correctly this will show "Hello world!"
-  printf(szOutputBuffer);
-
-  return 0;
-  */
-}
