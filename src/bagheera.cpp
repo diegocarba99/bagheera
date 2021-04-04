@@ -747,9 +747,6 @@ int CMutagenSPE::PolySPE(unsigned char * lpInputBuffer, \
   //
   ///////////////////////////////////////////////////////////
 
-  std::cout << "diEncryptedData " << diEncryptedData << "\n";
-  std::cout << "diCryptOps " << diCryptOps << "\n";
-
   // free the encrypted data buffer
   //free(&diEncryptedData);
 

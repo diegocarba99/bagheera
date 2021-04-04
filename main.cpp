@@ -7,7 +7,8 @@ typedef unsigned int(*DecryptionProc)(void *);
 int main()
 {
 
-  srand(0);
+  //srand(0);
+  srand(time(NULL));
   
   // input data (in this case a simple string,
   // although it could be any data buffer)
@@ -38,10 +39,17 @@ int main()
   speEngine->PolySPE(reinterpret_cast<unsigned char*>(payload), sizeof(payload), &lpcDecryptionProc, &dwDecryptionProcSize);
 
   // write the generated function to disk
-  std::cout << "Creating file...\n";
-  FILE *hFile = fopen("polymorphic_code.bin", "wb");
 
-  std::cout << "Writting onto file\n";
+  std::cout << "Creating file...\n";
+  std::string filename = "bins/not_gonna_harm_your_pc_";
+  std::string filenum = std::to_string(rand()%10);
+  std::string extension = ".BenIgN";
+  filename += filenum;
+  filename += extension;
+
+  FILE *hFile = fopen(filename.c_str(), "wb");
+
+  std::cout << "Writting onto file "<< filename << "\n";
   if (hFile != NULL)
   {
     fwrite(lpcDecryptionProc, dwDecryptionProcSize, 1, hFile);
