@@ -24,7 +24,7 @@ private:
   typedef struct _SPE_OUTPUT_REGS {
 
     // target register
-    asmjit::x86::Gp regDst;
+    x86::Gp regDst;
 
     // value to write in this register
     unsigned long dwValue;
@@ -40,8 +40,8 @@ private:
     // and the value in dwCryptValue
     int bCryptWithReg;
 
-    asmjit::x86::Gp regDst;
-    asmjit::x86::Gp regSrc;
+    x86::Gp regDst;
+    x86::Gp regSrc;
 
     // encryption operation
     unsigned char cCryptOp;
@@ -78,36 +78,39 @@ private:
 
   // encryption key
   unsigned long dwEncryptionKey;
+ 
 
-  asmjit::JitRuntime rt;                    // Create a runtime specialized for JIT.
-  asmjit::CodeHolder code;                  // Create a CodeHolder.
-  asmjit::FileLogger logger;   // Logger should always survive CodeHolder.
-  
-  // asmjit Assembler instance
-  asmjit::x86::Assembler a;
+  //asmjit::JitRuntime rt {};        // Create a runtime specialized for JIT.
+  //asmjit::CodeHolder code {};      // Create a CodeHolder.
 
+  //code.init(rt.environment());      // Initialize code to match the JIT environment.
+
+  //x86::Assembler a {};     // asmjit Assembler instance
+  //x86::Assembler a(&code);          // Create and attach x86::Assembler to code.
+
+  FileLogger logger;    // Logger should always survive CodeHolder.
 
   // the register which will store a pointer
   // to the data which is to be decrypted
-  asmjit::x86::Gp regSrc;
+  x86::Gp regSrc;
 
   // the register which will store a pointer
   // to the output buffer
-  asmjit::x86::Gp regDst;
+  x86::Gp regDst;
 
   // the register which hold the size of the
   // encrypted data
-  asmjit::x86::Gp regSize;
+  x86::Gp regSize;
 
   // the register with the encryption key
-  asmjit::x86::Gp regKey;
+  x86::Gp regKey;
 
   // the register on which the decryption
   // instructions will operate
-  asmjit::x86::Gp regData;
+  x86::Gp regData;
 
   // the preserved registers (ESI EDI EBX in random order)
-  asmjit::x86::Gp regSafe1, regSafe2, regSafe3;
+  x86::Gp regSafe1, regSafe2, regSafe3;
 
   // the delta_offset label
   Label lblDeltaOffset;
@@ -125,20 +128,24 @@ private:
 
   // helper methods
   void RandomizeRegisters();
-  void GeneratePrologue();
-  void GenerateDeltaOffset();
+  void GeneratePrologue(x86::Assembler& a);
+  void GenerateDeltaOffset(x86::Assembler& a);
   void EncryptInputBuffer(unsigned char * lpInputBuffer, \
                           unsigned long dwInputBuffer, \
                           unsigned long dwMinInstr, \
                           unsigned long dwMaxInstr);
-  void SetupDecryptionKeys();
-  void GenerateDecryption();
+  void SetupDecryptionKeys(x86::Assembler& a);
+  void GenerateDecryption(x86::Assembler& a);
   void SetupOutputRegisters(SPE_OUTPUT_REGS *regOutput, \
-                            unsigned long dwCount);
-  void GenerateEpilogue(unsigned long dwParamCount);
-  void AlignDecryptorBody(unsigned long dwAlignment);
-  void AppendEncryptedData();
-  void UpdateDeltaOffsetAddressing();
+                            unsigned long dwCount, \
+                            x86::Assembler& a);
+  void GenerateEpilogue(unsigned long dwParamCount, \
+                        x86::Assembler& a);
+  void AlignDecryptorBody(unsigned long dwAlignment, \
+                          x86::Assembler& a, \
+                          CodeHolder& code);
+  void AppendEncryptedData(x86::Assembler& a);
+  void UpdateDeltaOffsetAddressing(x86::Assembler& a);
 };
 
 

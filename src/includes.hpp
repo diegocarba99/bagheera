@@ -13,9 +13,6 @@
 
 #include "../lib/asmjit.h"
 
-
-#include "../lib/asmjit.h"
-
 #ifndef ERR_CODES
 
   #define MUTAGEN_ERR_PARAMS -1

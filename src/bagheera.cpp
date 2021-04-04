@@ -6,9 +6,6 @@ using namespace asmjit;
 // types problem: https://stackoverflow.com/questions/16297073/win32-data-types-equivalant-in-linux
 // https://github.com/niosus/EasyClangComplete
 
-
-
-
 ///////////////////////////////////////////////////////////
 //
 // random register selection
@@ -17,10 +14,11 @@ using namespace asmjit;
 
 void CMutagenSPE::RandomizeRegisters()
 {
+  using namespace asmjit::x86;
   std::cout << "PE: Randomizing registers\n";
   // set random registers
-  //asmjit::x86::Gp cRegsGeneral[] = { asmjit::x86::regs::eax, asmjit::x86::regs::ecx, asmjit::x86::regs::ebx, asmjit::x86::regs::edx, asmjit::x86::regs::esi, asmjit::x86::regs::edi };
-  asmjit::x86::Gp cRegsGeneral[] =  {asmjit::x86::regs::eax, asmjit::x86::regs::ecx, asmjit::x86::regs::ebx, asmjit::x86::regs::edx, asmjit::x86::regs::esi, asmjit::x86::regs::edi};
+  //Gp cRegsGeneral[] = { regs::eax, regs::ecx, regs::ebx, regs::edx, regs::esi, regs::edi };
+  Gp cRegsGeneral[] =  {regs::eax, regs::ecx, regs::ebx, regs::edx, regs::esi, regs::edi};
 
   // obtain a time-based seed:
   //unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -54,8 +52,8 @@ void CMutagenSPE::RandomizeRegisters()
 
   // set the register whose values will be
   // preserved across function invocations
-  // asmjit::x86::Gp cRegsSafe[] = { asmjit::x86::regs::esi, asmjit::x86::regs::edi, asmjit::x86::regs::ebx };
-  asmjit::x86::Gp cRegsSafe[] = {asmjit::x86::regs::eax, asmjit::x86::regs::ecx, asmjit::x86::regs::ebx, asmjit::x86::regs::edx, asmjit::x86::regs::esi, asmjit::x86::regs::edi};
+  // Gp cRegsSafe[] = { regs::esi, regs::edi, regs::ebx };
+  Gp cRegsSafe[] = {regs::eax, regs::ecx, regs::ebx, regs::edx, regs::esi, regs::edi};
   
   // obtain a time-based seed:
   //seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -77,36 +75,31 @@ void CMutagenSPE::RandomizeRegisters()
 //
 ///////////////////////////////////////////////////////////
 
-void CMutagenSPE::GeneratePrologue()
+void CMutagenSPE::GeneratePrologue(x86::Assembler& a)
 {
+  using namespace asmjit::x86;
 
   std::cout << "PE: Generating prologue\n";
   // function prologue
   // first the original value of EBP is saved
   // so we can use EBP to refer to the stack frame
-  std::cout << "\tPE: saving EBP \n";
-  if (1 == 0)
+  if (rand()%2 == 0)
   {
-    std::cout << "\tPE: method 1... ";
-    a.push(asmjit::x86::regs::ebp);
-    a.mov(asmjit::x86::regs::ebp,asmjit::x86::regs::esp);
-    std::cout << "DONE\n";
+    a.push(ebp);
+    a.mov(ebp, esp);    
   }
   else
   {
-    std::cout << "\tPE: method 2... ";
     // equivalent to the instructions
     // push ebp
     // mov ebp,esp
     a.enter(imm(0), imm(0));
-    std::cout << "DONE\n";
   }
 
   // if our function is called using the stdcall
   // convention, and modifies ESI, EDI, or EBX,
   // they must be saved at the beginning of
   // the function and restored at the end
-  std::cout << "\tPE: saving stdcall registers\n";
   a.push(regSafe1);
   a.push(regSafe2);
   a.push(regSafe3);
@@ -115,9 +108,7 @@ void CMutagenSPE::GeneratePrologue()
   // into our randomly-selected register regDst
   // (this is the only parameter to the function,
   // passed on the stack)
-  std::cout << "\tPE: loading pointer output buffer\n";
-  a.mov(regDst, dword_ptr(asmjit::x86::regs::ebp, 0x08 + (4 * 0)));
-  std::cout << "\tPE: done \n";
+  a.mov(regDst, dword_ptr(regs::ebp, 0x08 + (4 * 0)));
 }
 
 
@@ -127,8 +118,9 @@ void CMutagenSPE::GeneratePrologue()
 //
 ///////////////////////////////////////////////////////////
 
-void CMutagenSPE::GenerateDeltaOffset()
+void CMutagenSPE::GenerateDeltaOffset(x86::Assembler& a)
 {
+  using namespace asmjit::x86;
 
   std::cout << "PE: Calculating delta offset\n";
   // generate code which will allow us to
@@ -167,11 +159,11 @@ void CMutagenSPE::GenerateDeltaOffset()
   // a function
   if (rand()%2 == 0)
   {
-    a.mov(asmjit::x86::regs::eax, imm(1));
+    a.mov(regs::eax, imm(1));
   }
   else
   {
-    a.xor_(asmjit::x86::regs::eax, asmjit::x86::regs::eax);
+    a.xor_(regs::eax, regs::eax);
   }
 
   a.leave();
@@ -194,8 +186,8 @@ void CMutagenSPE::GenerateDeltaOffset()
   // antivirus programs
 
   //a.pop(regSrc);
-  a.mov(regSrc, dword_ptr(asmjit::x86::regs::esp));
-  a.add(asmjit::x86::regs::esp, imm(sizeof(unsigned long)));
+  a.mov(regSrc, dword_ptr(regs::esp));
+  a.add(regs::esp, imm(sizeof(unsigned long)));
 
   // the address of the label "delta_offset:"
   // will now be in the regSrc register;
@@ -225,6 +217,8 @@ void CMutagenSPE::EncryptInputBuffer(unsigned char * lpInputBuffer, \
                                      unsigned long dwMinInstr, \
                                      unsigned long dwMaxInstr)
 {
+
+  using namespace asmjit::x86;
 
   std::cout << "PE: Encrypting input buffer\n";
   // generate an encryption key
@@ -342,8 +336,9 @@ void CMutagenSPE::EncryptInputBuffer(unsigned char * lpInputBuffer, \
 //
 ///////////////////////////////////////////////////////////
 
-void CMutagenSPE::SetupDecryptionKeys()
+void CMutagenSPE::SetupDecryptionKeys(x86::Assembler& a)
 {
+  using namespace asmjit::x86;
 
   std::cout << "PE: Setting up decryption keys\n";
   // set up a decryption key in the regKey
@@ -384,8 +379,10 @@ void CMutagenSPE::SetupDecryptionKeys()
 //
 ///////////////////////////////////////////////////////////
 
-void CMutagenSPE::GenerateDecryption()
+void CMutagenSPE::GenerateDecryption(x86::Assembler& a)
 {
+
+  using namespace asmjit::x86;
 
   std::cout << "PE: generating decryption\n";
   // set up the size of the encrypted data
@@ -483,8 +480,10 @@ void CMutagenSPE::GenerateDecryption()
 //
 ///////////////////////////////////////////////////////////
 
-void CMutagenSPE::SetupOutputRegisters(SPE_OUTPUT_REGS *regOutput, unsigned long dwCount)
+void CMutagenSPE::SetupOutputRegisters(SPE_OUTPUT_REGS *regOutput, unsigned long dwCount, x86::Assembler& a)
 {
+
+  using namespace asmjit::x86;
 
   std::cout << "PE: seting up output registers\n";
   // if there are no output registers to
@@ -514,8 +513,10 @@ void CMutagenSPE::SetupOutputRegisters(SPE_OUTPUT_REGS *regOutput, unsigned long
 //
 ///////////////////////////////////////////////////////////
 
-void CMutagenSPE::GenerateEpilogue(unsigned long dwParamCount)
+void CMutagenSPE::GenerateEpilogue(unsigned long dwParamCount, x86::Assembler& a)
 {
+
+  using namespace asmjit::x86;
 
   std::cout << "PE: generating epilogue\n";
   // restore the original values of
@@ -532,8 +533,8 @@ void CMutagenSPE::GenerateEpilogue(unsigned long dwParamCount)
   else
   {
     // equivalent to "leave"
-    a.mov(asmjit::x86::regs::esp,asmjit::x86::regs::ebp);
-    a.pop(asmjit::x86::regs::ebp);
+    a.mov(regs::esp,regs::ebp);
+    a.pop(regs::ebp);
   }
 
   // return to the code which called
@@ -551,10 +552,16 @@ void CMutagenSPE::GenerateEpilogue(unsigned long dwParamCount)
 //
 ///////////////////////////////////////////////////////////
 
-void CMutagenSPE::AlignDecryptorBody(unsigned long dwAlignment)
+void CMutagenSPE::AlignDecryptorBody(unsigned long dwAlignment, x86::Assembler& a, CodeHolder& code)
 {
+
+  using namespace asmjit::x86;
+
   std::cout << "PE: aligning decryptor body\n";
-  /*
+
+  a.align(kAlignCode, dwAlignment);
+
+/*
   // take the current size of the code
   // Might have to add a Codehold variable to the program and use that variable to get code size
   unsigned long dwCurrentSize = code.codeSize();
@@ -591,8 +598,9 @@ void CMutagenSPE::AlignDecryptorBody(unsigned long dwAlignment)
 //
 ///////////////////////////////////////////////////////////
 
-void CMutagenSPE::UpdateDeltaOffsetAddressing()
+void CMutagenSPE::UpdateDeltaOffsetAddressing(x86::Assembler& a)
 {
+  using namespace asmjit::x86;
 
   std::cout << "PE: update delta offset adress\n";
   /*
@@ -628,8 +636,9 @@ void CMutagenSPE::UpdateDeltaOffsetAddressing()
 //
 ///////////////////////////////////////////////////////////
 
-void CMutagenSPE::AppendEncryptedData()
+void CMutagenSPE::AppendEncryptedData(x86::Assembler& a)
 {
+  using namespace asmjit::x86;
   std::cout << "PE: append encrypted data\n";
 
   unsigned long * lpdwEncryptedData = reinterpret_cast<unsigned long *>(diEncryptedData);
@@ -660,6 +669,7 @@ int CMutagenSPE::PolySPE(unsigned char * lpInputBuffer, \
 {
 
   std::cout << "PE: calling main function\n";
+  using namespace asmjit::x86;
   ///////////////////////////////////////////////////////////
   //
   // check input parameters
@@ -672,13 +682,22 @@ int CMutagenSPE::PolySPE(unsigned char * lpInputBuffer, \
     return MUTAGEN_ERR_PARAMS;
   }
 
-  //std::ofstream logfile { "log.asmjit" };
-  logger.setFile(stdout);
-
-  code.init(rt.environment());
-  a.onAttach(&code);
+  JitRuntime rt;                    // Create a runtime specialized for JIT.
+  CodeHolder code;                  // Create a CodeHolder.
+ 
+  code.init(rt.environment());      // Initialize code to match the JIT environment.
+  Assembler a(&code);          // Create and attach x86::Assembler to code.
   code.setLogger(&logger);     // Attach the `logger` to `code` holder.
+  //logger.setFile(stdout);
 
+
+/*
+  //std::ofstream logfile { "log.asmjit" };
+  code.init(rt.environment());
+  //Assembler assembler(&code);
+  a.onAttach(&code);
+*/
+  
   // randomly select registers
   RandomizeRegisters();
 
@@ -689,10 +708,10 @@ int CMutagenSPE::PolySPE(unsigned char * lpInputBuffer, \
   ///////////////////////////////////////////////////////////
 
   // generate function prologue
-  GeneratePrologue();
+  GeneratePrologue(a);
 
   // set up relative addressing through the delta offset technique
-  GenerateDeltaOffset();
+  GenerateDeltaOffset(a);
 
   // encrypt the input data, generate encryption keys. the additional parameters set the lower and upper limits on the 
   // number of encryption instructions which will be generated (there is no limit to this number, you can specify 
@@ -700,27 +719,27 @@ int CMutagenSPE::PolySPE(unsigned char * lpInputBuffer, \
   EncryptInputBuffer(lpInputBuffer, dwInputBuffer, 3, 5);
 
   // generate code to set up keys for decryption
-  SetupDecryptionKeys();
+  SetupDecryptionKeys(a);
 
   // generate decryption code
-  GenerateDecryption();
+  GenerateDecryption(a);
 
   // set up the values of the output registers
-  SPE_OUTPUT_REGS regOutput[] = { { asmjit::x86::regs::eax, dwInputBuffer } };
-  SetupOutputRegisters(regOutput, 2);
+  SPE_OUTPUT_REGS regOutput[] = { { regs::eax, dwInputBuffer } };
+  SetupOutputRegisters(regOutput, 2, a);
 
   // generate function epilogue
-  GenerateEpilogue(1L);
+  GenerateEpilogue(1L, a);
 
   // align the size of the function to a multiple
   // of 4 or 16
-  AlignDecryptorBody(rand()%2 == 0 ? 4L : 16L);
+  AlignDecryptorBody(rand()%2 == 0 ? 4L : 16L, a, code);
 
   // fix up any instructions that use delta offset addressing
-  UpdateDeltaOffsetAddressing();
+  UpdateDeltaOffsetAddressing(a);
 
   // place the encrypted data at the end of the function
-  AppendEncryptedData();
+  AppendEncryptedData(a);
 
   ///////////////////////////////////////////////////////////
   //
@@ -728,11 +747,14 @@ int CMutagenSPE::PolySPE(unsigned char * lpInputBuffer, \
   //
   ///////////////////////////////////////////////////////////
 
+  std::cout << "diEncryptedData " << diEncryptedData << "\n";
+  std::cout << "diCryptOps " << diCryptOps << "\n";
+
   // free the encrypted data buffer
-  free(&diEncryptedData);
+  //free(&diEncryptedData);
 
   // free the array of encryption pseudoinstructions
-  free(&diCryptOps);
+  //free(&diCryptOps);
 
   ///////////////////////////////////////////////////////////
   //

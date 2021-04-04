@@ -3,6 +3,7 @@
 
 typedef unsigned int(*DecryptionProc)(void *);
 
+
 int main()
 {
 
@@ -18,6 +19,7 @@ int main()
   // create an instance of the polymorphic
   // engine,
   std::cout << "Creating bangheera PE instance\n";
+
   CMutagenSPE *speEngine = new CMutagenSPE();
 
   // a pointer to the generated decryption
@@ -46,6 +48,8 @@ int main()
     fclose(hFile);
   }
 
+  std::cout << "Write process sucsessful\n";
+
   // cast the function pointer to the right type
   DecryptionProc lpDecryptionProc = reinterpret_cast<DecryptionProc>(lpcDecryptionProc);
 
@@ -54,12 +58,14 @@ int main()
 
   // call the decryption function via its
   // function pointer
+  std::cout << "Calling function\n";
   unsigned int dwOutputSize = lpDecryptionProc(szOutputBuffer);
 
   // display the decrypted text - if everything
   // went correctly this will show "Hello world!"
-  std::cout << "returned size: " << dwOutputSize;
-  std::cout << szOutputBuffer;
+  std::cout << "Results:\n";
+  std::cout << "returned size: " << dwOutputSize << "\n";
+  std::cout << szOutputBuffer << "\n";
 
   return 0;
   

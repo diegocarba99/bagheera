@@ -11,8 +11,10 @@ CFLAGS  = -g -Wall -std=c++11 -DASMJIT_STATIC
 TARGET = main
 ENGINE = bagheera
 
-x86TEST = x86_assembler_test
-#x86TEST = test
+TEST = src/asmjit_test_assembler
+x86TEST = src/asmjit_test_assembler_x86
+BENCH = asmjit_bench_x86
+
 
 SRC = src/
 LIB = lib/
@@ -29,10 +31,17 @@ make single:
 	$(CC) -o $(TARGET) $(TARGET).cpp $(CFLAGS) -L$(LIB) -lasmjit
 
 test:
-	$(CC) -o $(x86TEST) $(x86TEST).cpp $(CFLAGS) -L$(LIB) -lasmjit 
+	$(CC) -o $(TEST) $(x86TEST).cpp $(TEST).cpp $(CFLAGS) -L$(LIB) -lasmjit 
+
+test2:
+	$(CC) -o $(BENCH) $(SRC)$(BENCH).cpp $(CFLAGS) -L$(LIB) -lasmjit 
+
+test_run:
+	./$(TEST)
 
 run:
 	./$(TARGET)
 
 clean: 
+	$(RM) core.*
 	$(RM) $(TARGET)
