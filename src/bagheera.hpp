@@ -146,6 +146,7 @@ private:
                           CodeHolder& code);
   void AppendEncryptedData(x86::Assembler& a);
   void UpdateDeltaOffsetAddressing(x86::Assembler& a);
+  void WriteToFile(unsigned char *lpcDecryptionProc, unsigned long dwDecryptionProcSize);
 };
 
 

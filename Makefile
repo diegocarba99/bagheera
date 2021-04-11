@@ -18,6 +18,7 @@ BENCH = asmjit_bench_x86
 
 SRC = src/
 LIB = lib/
+BINS = bins/
 
 ULIMIT_CONF = ulimit -c unlimited
 
@@ -43,5 +44,6 @@ run:
 	./$(TARGET)
 
 clean: 
-	$(RM) core.*
+	$(RM) core*
 	$(RM) $(TARGET)
+	$(RM) $(BINS)*

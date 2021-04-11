@@ -1,7 +1,7 @@
 #include "src/bagheera.hpp"
 #include "src/includes.hpp"
 
-typedef unsigned int(*DecryptionProc)(void *);
+
 
 
 int main()
@@ -15,7 +15,7 @@ int main()
   std::cout << "Creating payload\n";
 
   // char payload[] = "There are few sources of energy so powerful as a procrastinating college student";
-  char payload[] = "Hello world!";
+  char payload[] = "section     .text \n global      _start \n _start: \n     mov     edx,len \n     mov     ecx,msg \n     mov     ebx,1 \n     mov     eax,4 \n     int     0x80 \n     mov     eax,1 \n     int     0x80 \n section     .data \n msg     db  'Hello world',0xa \n len     equ $ - msg";
 
   // create an instance of the polymorphic
   // engine,
@@ -39,7 +39,7 @@ int main()
   speEngine->PolySPE(reinterpret_cast<unsigned char*>(payload), sizeof(payload), &lpcDecryptionProc, &dwDecryptionProcSize);
 
   // write the generated function to disk
-
+  /*
   std::cout << "Creating file...\n";
   std::string filename = "bins/not_gonna_harm_your_pc_";
   std::string filenum = std::to_string(rand()%10);
@@ -55,14 +55,17 @@ int main()
     fwrite(lpcDecryptionProc, dwDecryptionProcSize, 1, hFile);
     fclose(hFile);
   }
-
   std::cout << "Write process sucsessful\n";
+  */
+
 
   // cast the function pointer to the right type
+  /*
   DecryptionProc lpDecryptionProc = reinterpret_cast<DecryptionProc>(lpcDecryptionProc);
 
   // the output buffer for the decrypted data
-  char szOutputBuffer[128];
+  char *szOutputBuffer;
+  szOutputBuffer = (char *) malloc(8);
 
   // call the decryption function via its
   // function pointer
@@ -74,7 +77,7 @@ int main()
   std::cout << "Results:\n";
   std::cout << "returned size: " << dwOutputSize << "\n";
   std::cout << szOutputBuffer << "\n";
-
+  */
   return 0;
   
 }

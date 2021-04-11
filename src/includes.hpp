@@ -14,6 +14,11 @@
 
 #include "../lib/asmjit.h"
 
+#define DEBUG(s) (std::cout << "\t[d] " << s << "\n")
+
+typedef unsigned int(*DecryptionProc)(char *);
+
+
 #ifndef ERR_CODES
 
   #define MUTAGEN_ERR_PARAMS -1
