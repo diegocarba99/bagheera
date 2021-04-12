@@ -15,14 +15,17 @@
 #include "../lib/asmjit.h"
 
 #define DEBUG(s) (std::cout << "\t[d] " << s << "\n")
+#define DEBUG2(s1, s2) (std::cout << "\t[d] " << s1 << s2 << "\n")
+#define ERROR(s) (std::cout << "\t[!!] " << s << "\n")
+//#define DEBUG(s) 
 
 typedef unsigned int(*DecryptionProc)(char *);
 
 
 #ifndef ERR_CODES
 
-  #define MUTAGEN_ERR_PARAMS -1
-  #define MUTAGEN_ERR_MEMORY -2
+  #define MUTAGEN_ERR_PARAMS 1
+  #define MUTAGEN_ERR_MEMORY 2
   #define MUTAGEN_ERR_SUCCESS 0
 
 #endif

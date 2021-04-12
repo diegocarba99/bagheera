@@ -78,15 +78,6 @@ private:
 
   // encryption key
   unsigned long dwEncryptionKey;
- 
-
-  //asmjit::JitRuntime rt {};        // Create a runtime specialized for JIT.
-  //asmjit::CodeHolder code {};      // Create a CodeHolder.
-
-  //code.init(rt.environment());      // Initialize code to match the JIT environment.
-
-  //x86::Assembler a {};     // asmjit Assembler instance
-  //x86::Assembler a(&code);          // Create and attach x86::Assembler to code.
 
   FileLogger logger;    // Logger should always survive CodeHolder.
 
