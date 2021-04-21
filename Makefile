@@ -5,7 +5,7 @@ CC = g++
 #  -g         - this flag adds debugging information to the executable file
 #  -Wall      - this flag is used to turn on most compiler warnings
 #  -std=c++11 - this flag enables C++11 support in order to use AsmJit
-CFLAGS  = -g -Wall -std=c++11 -DASMJIT_STATIC
+CFLAGS  = -ggdb -Wall -std=c++11 -DASMJIT_STATIC
 
 # The build target
 TARGET = main
@@ -19,6 +19,8 @@ BENCH = asmjit_bench_x86
 SRC = src/
 LIB = lib/
 BINS = bins/
+TMP = tmp/
+LOG = log/
 
 ULIMIT_CONF = ulimit -c unlimited
 
@@ -47,3 +49,5 @@ clean:
 	$(RM) core*
 	$(RM) $(TARGET)
 	$(RM) $(BINS)*
+	$(RM) $(TMP)*
+	$(RM) $(LOG)*

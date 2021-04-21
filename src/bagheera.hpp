@@ -12,7 +12,7 @@ public:
   // the main function which performs the
   // encryption and generates the polymorphic
   // code
-  int PolySPE(unsigned char * lpInputBuffer, \
+  int PolySPE( char * lpInputBuffer, \
                             unsigned long dwInputBuffer, \
                             unsigned char * *lpOutputBuffer, \
                             unsigned long * lpdwOutputSize);
@@ -118,10 +118,10 @@ private:
   unsigned long dwUnusedCodeSize;
 
   // helper methods
-  void RandomizeRegisters();
+  void SelectRegisters();
   void GeneratePrologue(x86::Assembler& a);
   void GenerateDeltaOffset(x86::Assembler& a);
-  void EncryptInputBuffer(unsigned char * lpInputBuffer, \
+  void EncryptInputBuffer(char * lpInputBuffer, \
                           unsigned long dwInputBuffer, \
                           unsigned long dwMinInstr, \
                           unsigned long dwMaxInstr);
@@ -137,7 +137,7 @@ private:
                           CodeHolder& code);
   void AppendEncryptedData(x86::Assembler& a);
   void UpdateDeltaOffsetAddressing(x86::Assembler& a);
-  void WriteToFile(unsigned char *lpcDecryptionProc, unsigned long dwDecryptionProcSize);
+  void WriteToFile(void *lpcDecryptionProc, unsigned long dwDecryptionProcSize);
 };
 
 
