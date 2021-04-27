@@ -40,7 +40,7 @@ typedef long(*DecryptionProc)(void *);
 #endif
 
 #define ASMJIT_EMBED
-#define BLOCK_SIZE 128
+#define BLOCK_SIZE 8
 
 
 //typedef unsigned int(*DecryptionProc)(void *);

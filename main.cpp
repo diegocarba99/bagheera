@@ -7,21 +7,18 @@
 int main()
 {
 
+  //srand(1);
   srand(0);
-  //srand(time(NULL));
   
   // input data (in this case a simple string,
   // although it could be any data buffer)
   //std::cout << "Creating payload\n";
 
-  char payload[] = "Hello World";
+  unsigned char payload[] = "Erase una vez en un lugar de la mancha...";
   //std::ifstream ifs("hello_world");
   //std::string payload( (std::istreambuf_iterator<char>(ifs) ),
                        //(std::istreambuf_iterator<char>()    ) );
   //std::cout << payload.data() << std::endl;
-
-
-  //char payload[] = "section     .text \n global      _start \n _start: \n     mov     edx,len \n     mov     ecx,msg \n     mov     ebx,1 \n     mov     eax,4 \n     int     0x80 \n     mov     eax,1 \n     int     0x80 \n section     .data \n msg     db  'Hello world',0xa \n len     equ $ - msg";
 
   // create an instance of the polymorphic
   // engine,
@@ -42,7 +39,7 @@ int main()
   // encrypt the input data and dynamically
   // generate a decryption function
   //std::cout << "Call PolySPE function and encrypt data\n";
-  speEngine->PolySPE((char*)payload, sizeof(payload), &lpcDecryptionProc, &dwDecryptionProcSize);
+  speEngine->PolySPE((unsigned char*)payload, sizeof(payload), &lpcDecryptionProc, &dwDecryptionProcSize);
 
  
   return 0;

@@ -26,7 +26,7 @@ ULIMIT_CONF = ulimit -c unlimited
 
 all: $(TARGET)
 
-$(TARGET): $(SRC)$(ENGINE).cpp $(SRC)$(ENGINE).hpp
+$(TARGET): $(SRC)$(ENGINE).cpp $(SRC)$(ENGINE).hpp $(TARGET).cpp
 	$(ULIMIT_CONF)
 	$(CC) -o $(TARGET) $(TARGET).cpp $(SRC)$(ENGINE).cpp $(CFLAGS) -L$(LIB) -lasmjit 
 

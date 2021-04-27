@@ -12,7 +12,7 @@ public:
   // the main function which performs the
   // encryption and generates the polymorphic
   // code
-  int PolySPE( char * lpInputBuffer, \
+  int PolySPE( unsigned char * lpInputBuffer, \
                             unsigned long dwInputBuffer, \
                             unsigned char * *lpOutputBuffer, \
                             unsigned long * lpdwOutputSize);
@@ -31,25 +31,6 @@ private:
 
   } SPE_OUTPUT_REGS, *P_SPE_OUTPUT_REGS;
 
-  // description of an encryption operation
-  typedef struct _SPE_CRYPT_OP {
-
-    // TRUE if the operation is performed
-    // on two registers; FALSE if it is
-    // performed between the target register
-    // and the value in dwCryptValue
-    int bCryptWithReg;
-
-    x86::Gp regDst;
-    x86::Gp regSrc;
-
-    // encryption operation
-    unsigned char cCryptOp;
-
-    // encryption value
-    unsigned long dwCryptValue;
-
-  } SPE_CRYPT_OP, *P_SPE_CRYPT_OP;
 
   enum
   {
@@ -61,11 +42,7 @@ private:
   };
 
   // buffer with the encryption operations
-  char *diCryptOps;
-
-  // pointer to the table of encryption
-  // operations
-  P_SPE_CRYPT_OP lpcoCryptOps;
+  int *diCryptOps;
 
   // count of encryption operations
   unsigned long dwCryptOpsCount;
@@ -112,6 +89,9 @@ private:
   // the relative address of the encrypted data
   size_t posSrcPtr;
 
+  //leftover bytes on the payload used for padding to block size
+  unsigned long dwLeftOver;
+
   // the size of the unused code between delta
   // offset and the instructions which get that
   // value from the stack
@@ -121,14 +101,13 @@ private:
   void SelectRegisters();
   void GeneratePrologue(x86::Assembler& a);
   void GenerateDeltaOffset(x86::Assembler& a);
-  void EncryptInputBuffer(char * lpInputBuffer, \
+  void EncryptInputBuffer(unsigned char * lpInputBuffer, \
                           unsigned long dwInputBuffer, \
                           unsigned long dwMinInstr, \
                           unsigned long dwMaxInstr);
   void SetupDecryptionKeys(x86::Assembler& a);
   void GenerateDecryption(x86::Assembler& a);
-  void SetupOutputRegisters(SPE_OUTPUT_REGS *regOutput, \
-                            unsigned long dwCount, \
+  void SetupOutputRegisters(unsigned long returnValue, \
                             x86::Assembler& a);
   void GenerateEpilogue(unsigned long dwParamCount, \
                         x86::Assembler& a);
