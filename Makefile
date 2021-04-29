@@ -21,6 +21,11 @@ LIB = lib/
 BINS = bins/
 TMP = tmp/
 LOG = log/
+COOL_NAME = bagheera
+AV = clamscan
+SIGNATUREDB = -d clamav_db/
+DB = signatures.ndb
+
 
 ULIMIT_CONF = ulimit -c unlimited
 
@@ -28,22 +33,16 @@ all: $(TARGET)
 
 $(TARGET): $(SRC)$(ENGINE).cpp $(SRC)$(ENGINE).hpp $(TARGET).cpp
 	$(ULIMIT_CONF)
-	$(CC) -o $(TARGET) $(TARGET).cpp $(SRC)$(ENGINE).cpp $(CFLAGS) -L$(LIB) -lasmjit 
+	$(CC) -o $(COOL_NAME) $(TARGET).cpp $(SRC)$(ENGINE).cpp $(CFLAGS) -L$(LIB) -lasmjit 
 
 make single:
 	$(CC) -o $(TARGET) $(TARGET).cpp $(CFLAGS) -L$(LIB) -lasmjit
 
-test:
-	$(CC) -o $(TEST) $(x86TEST).cpp $(TEST).cpp $(CFLAGS) -L$(LIB) -lasmjit 
-
-test2:
-	$(CC) -o $(BENCH) $(SRC)$(BENCH).cpp $(CFLAGS) -L$(LIB) -lasmjit 
-
-test_run:
-	./$(TEST)
+av:
+	$(AV) $(SIGNATUREDB)$(DB) $(BINS)* -v
 
 run:
-	./$(TARGET)
+	./$(COOL_NAME)
 
 clean: 
 	$(RM) core*

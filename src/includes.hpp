@@ -20,11 +20,21 @@
 
 #include "../lib/asmjit.h"
 
-//#define DEBUG(s) (std::cout << s << "\n")
-//#define DEBUG2(s1, s2) (std::cout << s1 << s2 << "\n")
-#define ERROR(s) (std::cout << "[!!] " << s << "\n")
-#define DEBUG(s) 
-#define DEBUG2(s1, s2)
+#define DEBUGGING 0
+
+#if DEBUGGING == 0
+	#define DEBUG(s) 
+	#define DEBUG2(s1, s2)
+	#define ERROR(s)
+#elif DEBUGGING == 1
+	#define DEBUG(s) 
+	#define DEBUG2(s1, s2)
+	#define ERROR(s) (std::cout << "[!!] " << s << "\n")
+#else
+	#define DEBUG(s) (std::cout << s << "\n")
+	#define DEBUG2(s1, s2) (std::cout << s1 << s2 << "\n")
+	#define ERROR(s) (std::cout << "[!!] " << s << "\n")
+#endif
 
 //typedef unsigned int(*DecryptionProc)(char *);
 typedef long(*DecryptionProc)(void *);
