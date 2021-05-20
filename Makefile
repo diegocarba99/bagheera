@@ -33,7 +33,7 @@ all: $(TARGET)
 
 $(TARGET): $(SRC)$(ENGINE).cpp $(SRC)$(ENGINE).hpp $(TARGET).cpp
 	$(ULIMIT_CONF)
-	$(CC) -o $(COOL_NAME) $(TARGET).cpp $(SRC)$(ENGINE).cpp $(CFLAGS) -L$(LIB) -lasmjit 
+	$(CC) -o $(COOL_NAME) $(TARGET).cpp $(SRC)$(ENGINE).cpp $(CFLAGS) -L$(LIB) -lasmjit
 
 make single:
 	$(CC) -o $(TARGET) $(TARGET).cpp $(CFLAGS) -L$(LIB) -lasmjit
@@ -44,7 +44,7 @@ av:
 run:
 	./$(COOL_NAME)
 
-clean: 
+clean:
 	$(RM) core*
 	$(RM) $(TARGET)
 	$(RM) $(BINS)*
