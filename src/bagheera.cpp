@@ -1,5 +1,6 @@
 #include "includes.hpp"
 #include "bagheera.hpp"
+#include "helpers.h"
 
 using namespace asmjit;
 using namespace asmjit::x86;
@@ -10,7 +11,7 @@ using namespace std;
 /**
  * Sets the registers to be used in the polymorphic phase. The election is done at random.
  */
-void CMutagenSPE::SelectRegisters()
+void BagheeraPE::SelectRegisters()
 {
   Gp regsAvailable[] =  {regs::rax, regs::rcx, regs::rdx ,regs::rsi, regs::rdi, regs::r8, regs::r9, regs::r10, regs::r11};
 
@@ -31,7 +32,7 @@ void CMutagenSPE::SelectRegisters()
 /**
  * Generate decryption function prologue.
  */
-void CMutagenSPE::GeneratePrologue(x86::Assembler& a)
+void BagheeraPE::GeneratePrologue(x86::Assembler& a)
 {
 
   // save original value of EBP is saved so it can be used to refer to the stack frame. two equivalent options
@@ -64,7 +65,7 @@ void CMutagenSPE::GeneratePrologue(x86::Assembler& a)
 /**
  * Generate code to obtain pointer to encrypted data which is appended at the end of the function.
  */
-void CMutagenSPE::GenerateDeltaOffset(x86::Assembler& a)
+void BagheeraPE::GenerateDeltaOffset(x86::Assembler& a)
 {
   //std::cout << "> Asmjit offset before calling 'delta_offset' is: " << a.offset() << "\n";
 
@@ -111,7 +112,7 @@ void CMutagenSPE::GenerateDeltaOffset(x86::Assembler& a)
 /**
  * Generate the encryption keys, encryption instructions, and finally encrypt the input data
  */
-void CMutagenSPE::EncryptInputBuffer(unsigned char * lpInputBuffer, unsigned long dwInputBuffer, 
+void BagheeraPE::EncryptInputBuffer(unsigned char * lpInputBuffer, unsigned long dwInputBuffer, 
                                       unsigned long dwMinInstr, unsigned long dwMaxInstr )
 {
   // generate encryption key
@@ -196,7 +197,7 @@ void CMutagenSPE::EncryptInputBuffer(unsigned char * lpInputBuffer, unsigned lon
 /**
  * Set up the keys which will be used to decrypt the data in the apropiate registers
  */
-void CMutagenSPE::SetupDecryptionKeys(x86::Assembler& a)
+void BagheeraPE::SetupDecryptionKeys(x86::Assembler& a)
 {
   
   unsigned long dwKeyModifier = (unsigned long) rand();
@@ -223,7 +224,7 @@ void CMutagenSPE::SetupDecryptionKeys(x86::Assembler& a)
 /**
  *  generate the decryption code (for the main decryption loop)
  */
-void CMutagenSPE::GenerateDecryption(x86::Assembler& a)
+void BagheeraPE::GenerateDecryption(x86::Assembler& a)
 {
   // set up the size of the encrypted data (in blocks)
   a.mov(regSize, imm(dwEncryptedBlocks));
@@ -286,7 +287,7 @@ void CMutagenSPE::GenerateDecryption(x86::Assembler& a)
 //
 ///////////////////////////////////////////////////////////
 
-void CMutagenSPE::SetupOutputRegisters(unsigned long returnValue, x86::Assembler& a)
+void BagheeraPE::SetupOutputRegisters(unsigned long returnValue, x86::Assembler& a)
 {
   a.mov(rax, imm(returnValue));
   /*
@@ -310,7 +311,7 @@ void CMutagenSPE::SetupOutputRegisters(unsigned long returnValue, x86::Assembler
 //
 ///////////////////////////////////////////////////////////
 
-void CMutagenSPE::GenerateEpilogue(unsigned long dwParamCount, x86::Assembler& a)
+void BagheeraPE::GenerateEpilogue(unsigned long dwParamCount, x86::Assembler& a)
 {
   // restore the original values of registers ESI EDI EBX
   //a.pop(regSafe3);
@@ -347,7 +348,7 @@ void CMutagenSPE::GenerateEpilogue(unsigned long dwParamCount, x86::Assembler& a
 /**
  * align the size of the decryption function to the specified granularity
  */
-void CMutagenSPE::AlignDecryptorBody(unsigned long dwAlignment, x86::Assembler& a, CodeHolder& code)
+void BagheeraPE::AlignDecryptorBody(unsigned long dwAlignment, x86::Assembler& a, CodeHolder& code)
 {
   a.align(kAlignCode, dwAlignment);
 }
@@ -357,7 +358,7 @@ void CMutagenSPE::AlignDecryptorBody(unsigned long dwAlignment, x86::Assembler& 
  * correct all instructions making use of addressing relative to the delta offset
  * reference: https://asmjit.com/doc/classasmjit_1_1x86_1_1Assembler.html  section: Using x86::Assembler as Code-Patcher
  */
-void CMutagenSPE::UpdateDeltaOffsetAddressing(x86::Assembler& a)
+void BagheeraPE::UpdateDeltaOffsetAddressing(x86::Assembler& a)
 {
 
   // Get current position
@@ -380,7 +381,7 @@ void CMutagenSPE::UpdateDeltaOffsetAddressing(x86::Assembler& a)
 /**
  * append the encrypted data to the end of the code of the decryption function
  */
-void CMutagenSPE::AppendEncryptedData(x86::Assembler& a)
+void BagheeraPE::AppendEncryptedData(x86::Assembler& a)
 {
   unsigned long * lpdwEncryptedData = reinterpret_cast<unsigned long *>(diEncryptedData);
 
@@ -392,7 +393,7 @@ void CMutagenSPE::AppendEncryptedData(x86::Assembler& a)
 }
 
 
-void CMutagenSPE::WriteToFile(void *lpcDecryptionProc, unsigned long dwDecryptionProcSize)
+void BagheeraPE::WriteToFile(void *lpcDecryptionProc, unsigned long dwDecryptionProcSize)
 {
   std::string filename = "bins/not_gonna_harm_your_pc_";
   //std::string filenum = std::to_string(rand()%10);
@@ -420,7 +421,7 @@ void CMutagenSPE::WriteToFile(void *lpcDecryptionProc, unsigned long dwDecryptio
 //
 ///////////////////////////////////////////////////////////
 
-int CMutagenSPE::PolySPE( unsigned char * lpInputBuffer, unsigned long dwInputBuffer, unsigned char * *lpOutputBuffer, \
+int BagheeraPE::create( unsigned char * lpInputBuffer, unsigned long dwInputBuffer, char * *lpOutputBuffer, \
                           unsigned long * lpdwOutputSize )
 {
   DEBUG("calling main function");
@@ -543,8 +544,197 @@ int CMutagenSPE::PolySPE( unsigned char * lpInputBuffer, unsigned long dwInputBu
 
     // provide the output buffer and code size to
     // this function's caller
-    *lpOutputBuffer = (unsigned char *)diOutput;
+    *lpOutputBuffer = (char *)diOutput;
     *lpdwOutputSize = dwOutputSize;
+
+    cout << INFO_BANNER << ": lpOutputBuffer = " << lpOutputBuffer << endl;
+    cout << INFO_BANNER << ": *lpOutputBuffer = " << hex << *lpOutputBuffer << dec << endl;
+    /*
+    for (int i = 0; i < *lpdwOutputSize; ++i){
+      cout << "?¿";
+      cout << hex << (*lpOutputBuffer[i]) << " "; 
+    }
+    cout<< endl;
+    */
+    cout << INFO_BANNER << ": lpdwOutputSize = " << lpdwOutputSize << endl;
+    cout << INFO_BANNER << ": *lpdwOutputSize = " << *lpdwOutputSize << endl;
+
+
+
+
+    DEBUG("writing the code to a function");
+    WriteToFile(diOutput, dwOutputSize);
+
+    /*
+    DEBUG("creating output buffer for the function");
+    
+    char* szOutputBuffer;
+    szOutputBuffer = (char*) malloc(dwInputBuffer);
+    if (szOutputBuffer == NULL) {
+      ERROR("could not allocate memory for output buffer for the decrypted data");
+      exit(MUTAGEN_ERR_MEMORY);
+    } 
+    
+    DecryptionProc function = reinterpret_cast<DecryptionProc>(diOutput);
+
+    // call the decryption function via its function pointer
+    //DecryptionProc function = reinterpret_cast<DecryptionProc>(lpOutputBuffer);
+    DEBUG("calling function");
+    unsigned long dwOutputSize = function(szOutputBuffer);
+
+    // display the decrypted text
+    printf("Payload (%lu) : %s\n", dwOutputSize, szOutputBuffer );
+    std::cout << "Payload (" << dwOutputSize << ") : ";
+    for (int i = 0; i < (int) dwOutputSize; ++i)
+     cout << hex << static_cast<unsigned>(szOutputBuffer[i]) << " "; 
+   cout<< endl;
+  
+  */
+  
+    
+    rt.release(lpPolymorphicCode);
+  }
+  else
+  {
+    ERROR("could not allocate memory for output file");
+    rt.release(lpPolymorphicCode);
+
+    return MUTAGEN_ERR_MEMORY;
+  }
+
+  ///////////////////////////////////////////////////////////
+  //
+  // function exit
+  //
+  ///////////////////////////////////////////////////////////
+
+  return MUTAGEN_ERR_SUCCESS;
+}
+
+
+
+
+///////////////////////////////////////////////////////////
+//
+// main function - encrypts data and generates polymorphic
+//                 decryptor code
+//
+///////////////////////////////////////////////////////////
+
+int BagheeraPE::execute( unsigned char * lpInputBuffer, unsigned long dwInputBuffer )
+{
+  DEBUG("calling main function");
+  
+  // check input errors
+  if ( (lpInputBuffer == NULL) || (dwInputBuffer == 0)  )
+    return MUTAGEN_ERR_PARAMS;
+  
+  JitRuntime rt;                // Create a runtime specialized for JIT
+  CodeHolder code;              // Create a CodeHolder
+  code.init(rt.environment());  // Initialize code to match the JIT environment
+  Assembler a(&code);           // Create and attach x86::Assembler to code
+  code.setLogger(&logger);      // Attach the `logger` to `code` holder
+  
+  FILE *logfile = fopen("log/asmjt.log", "w+");
+
+  if (logfile != NULL) {
+    logger.setFile(logfile);  // Set file as the logger exit
+  } else {
+    ERROR("could not open asmjit.log file. redirecting log to stdout");
+    logger.setFile(stdout);  // Set the standard output as the logger exit
+  }
+ 
+  DEBUG("randomly select registers");
+  SelectRegisters();
+
+  DEBUG("generate function prologue");
+  GeneratePrologue(a);
+
+  DEBUG("set up relative addressing through the delta offset technique");
+  GenerateDeltaOffset(a);
+
+  // encrypt the input data, generate encryption keys. the additional parameters set the lower and upper limits on the 
+  // number of encryption instructions which will be generated (there is no limit to this number, you can specify 
+  // numbers in the thousands, but be aware that this will make the output code quite large)
+  DEBUG("encrypt the input data");
+  EncryptInputBuffer(lpInputBuffer, dwInputBuffer, 5, 7);
+
+  DEBUG("generate code to set up keys for decryption");
+  SetupDecryptionKeys(a);
+  
+  DEBUG("generate decryption code");
+  GenerateDecryption(a);
+
+  DEBUG("set up the values of the output registers");
+  SetupOutputRegisters(dwInputBuffer, a);
+
+  DEBUG("generate function epilogue");
+  GenerateEpilogue(1L, a);
+
+  DEBUG("align the size of the function to a multiple of 4 or 16");
+  AlignDecryptorBody(rand()%2 == 0 ? 4L : 16L, a, code);
+
+  DEBUG("fix up any instructions that use delta offset addressing");
+  UpdateDeltaOffsetAddressing(a);
+
+  DEBUG("place the encrypted data at the end of the function");
+  AppendEncryptedData(a);
+
+
+  // free the encrypted data buffer
+  //free(&diEncryptedData);
+
+  // free the array of encryption pseudoinstructions
+  //free(&diCryptOps);
+  
+  ///////////////////////////////////////////////////////////
+  //
+  // copy the polymorphic code to the output buffer
+  //
+  ///////////////////////////////////////////////////////////
+
+  unsigned long dwOutputSize = code.codeSize();
+  
+  // assemble the code of the polymorphic function (this resolves jumps and labels)
+  DEBUG("assembling code and binding to a function");
+  DecryptionProc lpPolymorphicCode;
+  Error err = rt.add(&lpPolymorphicCode, &code);
+  if (err) return 1;                // Handle a possible error returned by AsmJit.
+
+  // this struct describes the allocated memory block
+  DEBUG("allocating memory for the execution of the function");
+  void *diOutput = mmap(0, dwOutputSize, 
+                   PROT_READ | PROT_WRITE ,
+                   MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+
+  if (diOutput == (void*)-1) {
+    ERROR("allocating executable memory for function");
+    exit(MUTAGEN_ERR_MEMORY);
+  }
+
+  // allocate memory (with execute permissions) for the output buffer
+  //int pagesize = sysconf(_SC_PAGE_SIZE);
+  //int aligned_size = ceil((double)dwOutputSize/(double)pagesize);
+  //std::cout << "pagesize: " << pagesize << "\n";
+  //std::cout << "aligned_size: " << aligned_size << "\n";
+  //std::cout << "dwOutputSize: " << dwOutputSize << "\n";
+  //std::cout << "aligned_dwOutputSize: " << aligned_size*pagesize << "\n";
+  //posix_memalign((void **)&diOutput, pagesize, aligned_size*pagesize);
+
+  DEBUG("making the memory page(s) of the function executable");
+  if (mprotect(diOutput, dwOutputSize, PROT_EXEC|PROT_READ|PROT_WRITE) == -1){
+    ERROR("could not make output buffer's page executable");
+    exit(MUTAGEN_ERR_MEMORY);
+  }
+
+  // check that allocation was successful
+  if (diOutput != NULL)
+  {
+    // copy the generated code of the decryption function
+    DEBUG("copying to memory the function code");
+    //memcpy(diOutput, (void *)lpPolymorphicCode, dwOutputSize);
+    asmjit::CodeBuffer& buf = code.sectionById(0)->buffer();
+    memcpy(diOutput, buf.data(), buf.size());
 
     DEBUG("writing the code to a function");
     WriteToFile(diOutput, dwOutputSize);

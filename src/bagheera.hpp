@@ -1,123 +1,131 @@
 #include "includes.hpp"
+#include "definitions.h"
 
 using namespace asmjit;
 
+#ifndef BAGHEERA_H
+  #define BAGHEERA_H
 
-class CMutagenSPE
-{
-public:
-  //CMutagenSPE(void);
-  //~CMutagenSPE(void);
+  class BagheeraPE
+  {
+  public:
+    //CMutagenSPE(void);
+    //~CMutagenSPE(void);
 
-  // the main function which performs the
-  // encryption and generates the polymorphic
-  // code
-  int PolySPE( unsigned char * lpInputBuffer, \
-                            unsigned long dwInputBuffer, \
-                            unsigned char * *lpOutputBuffer, \
-                            unsigned long * lpdwOutputSize);
+    // the main function which performs the
+    // encryption and generates the polymorphic
+    // code
+    int execute( unsigned char * lpInputBuffer, unsigned long dwInputBuffer);
 
-private:
+    int create( unsigned char * lpInputBuffer, \
+                              unsigned long dwInputBuffer, \
+                              char * *lpOutputBuffer, \
+                              unsigned long * lpdwOutputSize);
 
-  // a structure describing the values of
-  // the output registers
-  typedef struct _SPE_OUTPUT_REGS {
 
-    // target register
+  private:
+
+    // a structure describing the values of
+    // the output registers
+    typedef struct _SPE_OUTPUT_REGS {
+
+      // target register
+      x86::Gp regDst;
+
+      // value to write in this register
+      unsigned long dwValue;
+
+    } SPE_OUTPUT_REGS, *P_SPE_OUTPUT_REGS;
+
+
+    enum
+    {
+      SPE_CRYPT_OP_ADD = 0,
+      SPE_CRYPT_OP_SUB = 1,
+      SPE_CRYPT_OP_XOR = 2,
+      SPE_CRYPT_OP_NOT = 3,
+      SPE_CRYPT_OP_NEG = 4,
+    };
+
+    // buffer with the encryption operations
+    int *diCryptOps;
+
+    // count of encryption operations
+    unsigned long dwCryptOpsCount;
+
+    // pointer to the encrypted data block
+    char *diEncryptedData;
+
+    // number of blocks of encrypted data
+    unsigned long dwEncryptedBlocks;
+
+    // encryption key
+    unsigned long dwEncryptionKey;
+
+    FileLogger logger;    // Logger should always survive CodeHolder.
+
+    // the register which will store a pointer
+    // to the data which is to be decrypted
+    x86::Gp regSrc;
+
+    // the register which will store a pointer
+    // to the output buffer
     x86::Gp regDst;
 
-    // value to write in this register
-    unsigned long dwValue;
+    // the register which hold the size of the
+    // encrypted data
+    x86::Gp regSize;
 
-  } SPE_OUTPUT_REGS, *P_SPE_OUTPUT_REGS;
+    // the register with the encryption key
+    x86::Gp regKey;
 
+    // the register on which the decryption
+    // instructions will operate
+    x86::Gp regData;
 
-  enum
-  {
-    SPE_CRYPT_OP_ADD = 0,
-    SPE_CRYPT_OP_SUB = 1,
-    SPE_CRYPT_OP_XOR = 2,
-    SPE_CRYPT_OP_NOT = 3,
-    SPE_CRYPT_OP_NEG = 4,
+    // the preserved registers (ESI EDI EBX in random order)
+    x86::Gp regSafe1, regSafe2, regSafe3;
+
+    // the delta_offset label
+    Label lblDeltaOffset;
+    Label shellcode;
+
+    // the position of the delta offset
+    size_t posDeltaOffset;
+
+    // the relative address of the encrypted data
+    size_t posSrcPtr;
+
+    //leftover bytes on the payload used for padding to block size
+    unsigned long dwLeftOver;
+
+    // the size of the unused code between delta
+    // offset and the instructions which get that
+    // value from the stack
+    unsigned long dwUnusedCodeSize;
+
+    // helper methods
+    void SelectRegisters();
+    void GeneratePrologue(x86::Assembler& a);
+    void GenerateDeltaOffset(x86::Assembler& a);
+    void EncryptInputBuffer(unsigned char * lpInputBuffer, \
+                            unsigned long dwInputBuffer, \
+                            unsigned long dwMinInstr, \
+                            unsigned long dwMaxInstr);
+    void SetupDecryptionKeys(x86::Assembler& a);
+    void GenerateDecryption(x86::Assembler& a);
+    void SetupOutputRegisters(unsigned long returnValue, \
+                              x86::Assembler& a);
+    void GenerateEpilogue(unsigned long dwParamCount, \
+                          x86::Assembler& a);
+    void AlignDecryptorBody(unsigned long dwAlignment, \
+                            x86::Assembler& a, \
+                            CodeHolder& code);
+    void AppendEncryptedData(x86::Assembler& a);
+    void UpdateDeltaOffsetAddressing(x86::Assembler& a);
+    void WriteToFile(void *lpcDecryptionProc, unsigned long dwDecryptionProcSize);
   };
 
-  // buffer with the encryption operations
-  int *diCryptOps;
-
-  // count of encryption operations
-  unsigned long dwCryptOpsCount;
-
-  // pointer to the encrypted data block
-  char *diEncryptedData;
-
-  // number of blocks of encrypted data
-  unsigned long dwEncryptedBlocks;
-
-  // encryption key
-  unsigned long dwEncryptionKey;
-
-  FileLogger logger;    // Logger should always survive CodeHolder.
-
-  // the register which will store a pointer
-  // to the data which is to be decrypted
-  x86::Gp regSrc;
-
-  // the register which will store a pointer
-  // to the output buffer
-  x86::Gp regDst;
-
-  // the register which hold the size of the
-  // encrypted data
-  x86::Gp regSize;
-
-  // the register with the encryption key
-  x86::Gp regKey;
-
-  // the register on which the decryption
-  // instructions will operate
-  x86::Gp regData;
-
-  // the preserved registers (ESI EDI EBX in random order)
-  x86::Gp regSafe1, regSafe2, regSafe3;
-
-  // the delta_offset label
-  Label lblDeltaOffset;
-  Label shellcode;
-
-  // the position of the delta offset
-  size_t posDeltaOffset;
-
-  // the relative address of the encrypted data
-  size_t posSrcPtr;
-
-  //leftover bytes on the payload used for padding to block size
-  unsigned long dwLeftOver;
-
-  // the size of the unused code between delta
-  // offset and the instructions which get that
-  // value from the stack
-  unsigned long dwUnusedCodeSize;
-
-  // helper methods
-  void SelectRegisters();
-  void GeneratePrologue(x86::Assembler& a);
-  void GenerateDeltaOffset(x86::Assembler& a);
-  void EncryptInputBuffer(unsigned char * lpInputBuffer, \
-                          unsigned long dwInputBuffer, \
-                          unsigned long dwMinInstr, \
-                          unsigned long dwMaxInstr);
-  void SetupDecryptionKeys(x86::Assembler& a);
-  void GenerateDecryption(x86::Assembler& a);
-  void SetupOutputRegisters(unsigned long returnValue, \
-                            x86::Assembler& a);
-  void GenerateEpilogue(unsigned long dwParamCount, \
-                        x86::Assembler& a);
-  void AlignDecryptorBody(unsigned long dwAlignment, \
-                          x86::Assembler& a, \
-                          CodeHolder& code);
-  void AppendEncryptedData(x86::Assembler& a);
-  void UpdateDeltaOffsetAddressing(x86::Assembler& a);
-  void WriteToFile(void *lpcDecryptionProc, unsigned long dwDecryptionProcSize);
-};
+#endif
 
 

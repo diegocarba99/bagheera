@@ -25,15 +25,16 @@ COOL_NAME = bagheera
 AV = clamscan
 SIGNATUREDB = -d clamav_db/
 DB = signatures.ndb
+SOURCES = src/bagheera.cpp src/engine.cpp src/helpers.cpp src/infect.cpp
+HEADERS = src/bagheera.hpp src/definitions.h src/engine.h src/helpers.h src/infect.h
 
 
 ULIMIT_CONF = ulimit -c unlimited
 
 all: $(TARGET)
 
-$(TARGET): $(SRC)$(ENGINE).cpp $(SRC)$(ENGINE).hpp $(TARGET).cpp
-	$(ULIMIT_CONF)
-	$(CC) -o $(COOL_NAME) $(TARGET).cpp $(SRC)$(ENGINE).cpp $(CFLAGS) -L$(LIB) -lasmjit
+$(TARGET): $(SOURCES) $(HEADERS) $(TARGET).cpp
+	$(CC) -o $(COOL_NAME) $(TARGET).cpp $(SOURCES) $(CFLAGS) -L$(LIB) -lasmjit
 
 make single:
 	$(CC) -o $(TARGET) $(TARGET).cpp $(CFLAGS) -L$(LIB) -lasmjit
