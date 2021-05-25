@@ -9,10 +9,9 @@
 	  int 			mode;
 	  char         	*input;
 	  int 			inputsz;
-	  int 			output;
-	  std::filebuf*  elf;
-	  int 			elfsz;
-	  DIR           *dir;
+	  int          output;
+	  int       	elf;
+	  DIR          *dir;
 	} options_t;
 
 	void usage(char *progname, int opt);

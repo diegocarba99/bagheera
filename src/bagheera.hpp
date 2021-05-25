@@ -1,6 +1,5 @@
 #include "includes.hpp"
 #include "definitions.h"
-#include "helpers.h"
 
 using namespace asmjit;
 
@@ -16,15 +15,12 @@ using namespace asmjit;
     // the main function which performs the
     // encryption and generates the polymorphic
     // code
-    int execute( unsigned char * lpInputBuffer, \
-                 unsigned long dwInputBuffer, \
-                 options_t *options);
+    int execute( unsigned char * lpInputBuffer, unsigned long dwInputBuffer);
 
     int create( unsigned char * lpInputBuffer, \
                               unsigned long dwInputBuffer, \
                               char * *lpOutputBuffer, \
-                              unsigned long * lpdwOutputSize, \
-                              options_t *options);
+                              unsigned long * lpdwOutputSize);
 
 
   private:
@@ -127,9 +123,7 @@ using namespace asmjit;
                             CodeHolder& code);
     void AppendEncryptedData(x86::Assembler& a);
     void UpdateDeltaOffsetAddressing(x86::Assembler& a);
-    void WriteToFile(void *lpcDecryptionProc, \
-                      unsigned long dwDecryptionProcSize, \
-                      options_t *options);
+    void WriteToFile(void *lpcDecryptionProc, unsigned long dwDecryptionProcSize);
   };
 
 #endif

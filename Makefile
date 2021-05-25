@@ -33,8 +33,14 @@ ULIMIT_CONF = ulimit -c unlimited
 
 all: $(TARGET)
 
+<<<<<<< HEAD
 $(TARGET): $(SOURCES) $(HEADERS) $(TARGET).cpp
 	$(CC) -o $(COOL_NAME) $(TARGET).cpp $(SOURCES) $(CFLAGS) -L$(LIB) -lasmjit
+=======
+$(TARGET): $(SRC)$(ENGINE).cpp $(SRC)$(ENGINE).hpp $(TARGET).cpp
+	$(ULIMIT_CONF)
+	$(CC) -o $(COOL_NAME) $(TARGET).cpp $(SRC)$(ENGINE).cpp $(CFLAGS) -L$(LIB) -lasmjit 
+>>>>>>> parent of 411e78d... elf infection and code refactorization
 
 make single:
 	$(CC) -o $(TARGET) $(TARGET).cpp $(CFLAGS) -L$(LIB) -lasmjit
@@ -45,7 +51,7 @@ av:
 run:
 	./$(COOL_NAME)
 
-clean:
+clean: 
 	$(RM) core*
 	$(RM) $(TARGET)
 	$(RM) $(BINS)*
