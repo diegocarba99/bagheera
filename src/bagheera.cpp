@@ -144,10 +144,10 @@ void BagheeraPE::EncryptInputBuffer(unsigned char * lpInputBuffer, unsigned long
 
   // randomly select the number of encryption instructions
   dwCryptOpsCount = dwMinInstr + rand() % (( dwMaxInstr + 1 ) - dwMinInstr);
-  DEBUG2("number of encryption instructions:", dwCryptOpsCount);
 
   // allocate memory for an array which will record information about the sequence of encryption instructions
-  diCryptOps = (int *)malloc(dwCryptOpsCount);
+  //diCryptOps = (int *)malloc(dwCryptOpsCount);
+  diCryptOps = new int[dwCryptOpsCount];
   if( diCryptOps == NULL ){
     ERROR("could not allocate memory for sequence of encryption instructions array");
     exit(MUTAGEN_ERR_MEMORY);
@@ -157,7 +157,6 @@ void BagheeraPE::EncryptInputBuffer(unsigned char * lpInputBuffer, unsigned long
   // generate encryption instructions and their type. randomly choose the type of encryption instruction
   for (unsigned long i = 0; i < dwCryptOpsCount; i++){
     diCryptOps[i] = (int) rand()%4;
-    DEBUG2("diCryptOps: ", diCryptOps[i]);
   }
 
   // encrypt the input data according to instructions just generated
@@ -242,23 +241,18 @@ void BagheeraPE::GenerateDecryption(x86::Assembler& a)
       switch(diCryptOps[i])
       {
       case SPE_CRYPT_OP_ADD:
-        DEBUG("sub");
         a.sub(regData, regKey);
         break;
       case SPE_CRYPT_OP_SUB:
-        DEBUG("add");
         a.add(regData, regKey);
         break;
       case SPE_CRYPT_OP_XOR:
-        DEBUG("xor");
         a.xor_(regData, regKey);
         break;
       case SPE_CRYPT_OP_NOT:
-        DEBUG("not");
         a.not_(regData);
         break;
       case SPE_CRYPT_OP_NEG:
-        DEBUG("neg");
         a.neg(regData);
         break;
       }
@@ -393,7 +387,7 @@ void BagheeraPE::AppendEncryptedData(x86::Assembler& a)
 }
 
 
-void BagheeraPE::WriteToFile(void *lpcDecryptionProc, unsigned long dwDecryptionProcSize)
+void BagheeraPE::WriteToFile(void *lpcDecryptionProc, unsigned long dwDecryptionProcSize, options_t *options)
 {
   std::string filename = "bins/not_gonna_harm_your_pc_";
   //std::string filenum = std::to_string(rand()%10);
@@ -405,10 +399,10 @@ void BagheeraPE::WriteToFile(void *lpcDecryptionProc, unsigned long dwDecryption
 
   if (hFile != NULL)
   {
-    DEBUG("opening output file successful");
+    if (VERBOSE) printf("%s: opening output file successful\n", INFO_BANNER);
     fwrite(lpcDecryptionProc, dwDecryptionProcSize, 1, hFile);
     fclose(hFile);
-    DEBUG("writting successful");
+    if (VERBOSE) printf("%s: writting successful\n", INFO_BANNER);
   }
 
 
@@ -422,9 +416,9 @@ void BagheeraPE::WriteToFile(void *lpcDecryptionProc, unsigned long dwDecryption
 ///////////////////////////////////////////////////////////
 
 int BagheeraPE::create( unsigned char * lpInputBuffer, unsigned long dwInputBuffer, char * *lpOutputBuffer, \
-                          unsigned long * lpdwOutputSize )
+                          unsigned long * lpdwOutputSize, options_t *options )
 {
-  DEBUG("calling main function");
+  if (VERBOSE) printf("%s: calling main function\n", INFO_BANNER);
   
   // check input errors
   if ( (lpInputBuffer == NULL) || (dwInputBuffer == 0) ||  (lpOutputBuffer == NULL) || (lpdwOutputSize == NULL) )
@@ -446,42 +440,42 @@ int BagheeraPE::create( unsigned char * lpInputBuffer, unsigned long dwInputBuff
   }
 
   
-  DEBUG("randomly select registers");
+  if (VERBOSE) printf("%s: randomly select registers\n", INFO_BANNER);
   SelectRegisters();
 
 
-  DEBUG("generate function prologue");
+  if (VERBOSE) printf("%s: generate function prologue\n", INFO_BANNER);
   GeneratePrologue(a);
 
-  DEBUG("set up relative addressing through the delta offset technique");
+  if (VERBOSE) printf("%s: set up relative addressing through the delta offset technique\n", INFO_BANNER);
   GenerateDeltaOffset(a);
 
   // encrypt the input data, generate encryption keys. the additional parameters set the lower and upper limits on the 
   // number of encryption instructions which will be generated (there is no limit to this number, you can specify 
   // numbers in the thousands, but be aware that this will make the output code quite large)
-  DEBUG("encrypt the input data");
+  if (VERBOSE) printf("%s: encrypt the input data\n", INFO_BANNER);
   EncryptInputBuffer(lpInputBuffer, dwInputBuffer, 5, 7);
 
-  DEBUG("generate code to set up keys for decryption");
+  if (VERBOSE) printf("%s: generate code to set up keys for decryption\n", INFO_BANNER);
   SetupDecryptionKeys(a);
   
 
-  DEBUG("generate decryption code");
+  if (VERBOSE) printf("%s: generate decryption code\n", INFO_BANNER);
   GenerateDecryption(a);
 
-  DEBUG("set up the values of the output registers");
+  if (VERBOSE) printf("%s: set up the values of the output registers\n", INFO_BANNER);
   SetupOutputRegisters(dwInputBuffer, a);
 
-  DEBUG("generate function epilogue");
+  if (VERBOSE) printf("%s: generate function epilogue\n", INFO_BANNER);
   GenerateEpilogue(1L, a);
 
-  DEBUG("align the size of the function to a multiple of 4 or 16");
+  if (VERBOSE) printf("%s: align the size of the function to a multiple of 4 or 16\n", INFO_BANNER);
   AlignDecryptorBody(rand()%2 == 0 ? 4L : 16L, a, code);
 
-  DEBUG("fix up any instructions that use delta offset addressing");
+  if (VERBOSE) printf("%s: fix up any instructions that use delta offset addressing\n", INFO_BANNER);
   UpdateDeltaOffsetAddressing(a);
 
-  DEBUG("place the encrypted data at the end of the function");
+  if (VERBOSE) printf("%s: place the encrypted data at the end of the function\n", INFO_BANNER);
   AppendEncryptedData(a);
 
 
@@ -489,7 +483,7 @@ int BagheeraPE::create( unsigned char * lpInputBuffer, unsigned long dwInputBuff
   //free(&diEncryptedData);
 
   // free the array of encryption pseudoinstructions
-  //free(&diCryptOps);
+  delete[] diCryptOps;
   
   ///////////////////////////////////////////////////////////
   //
@@ -500,13 +494,13 @@ int BagheeraPE::create( unsigned char * lpInputBuffer, unsigned long dwInputBuff
   unsigned long dwOutputSize = code.codeSize();
   
   // assemble the code of the polymorphic function (this resolves jumps and labels)
-  DEBUG("assembling code and binding to a function");
+  if (VERBOSE) printf("%s: assembling code and binding to a function\n", INFO_BANNER);
   DecryptionProc lpPolymorphicCode;
   Error err = rt.add(&lpPolymorphicCode, &code);
   if (err) return 1;                // Handle a possible error returned by AsmJit.
 
   // this struct describes the allocated memory block
-  DEBUG("allocating memory for the execution of the function");
+  if (VERBOSE) printf("%s: allocating memory for the execution of the function\n", INFO_BANNER);
   void *diOutput = mmap(0, dwOutputSize, 
                    PROT_READ | PROT_WRITE ,
                    MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -525,7 +519,7 @@ int BagheeraPE::create( unsigned char * lpInputBuffer, unsigned long dwInputBuff
   //std::cout << "aligned_dwOutputSize: " << aligned_size*pagesize << "\n";
   //posix_memalign((void **)&diOutput, pagesize, aligned_size*pagesize);
 
-  DEBUG("making the memory page(s) of the function executable");
+  if (VERBOSE) printf("%s: making the memory page(s) of the function executable\n", INFO_BANNER);
   if (mprotect(diOutput, dwOutputSize, PROT_EXEC|PROT_READ|PROT_WRITE) == -1){
     ERROR("could not make output buffer's page executable");
     exit(MUTAGEN_ERR_MEMORY);
@@ -535,7 +529,7 @@ int BagheeraPE::create( unsigned char * lpInputBuffer, unsigned long dwInputBuff
   if (diOutput != NULL)
   {
     // copy the generated code of the decryption function
-    DEBUG("copying to memory the function code");
+    if (VERBOSE) printf("%s: copying to memory the function code\n", INFO_BANNER);
     //memcpy(diOutput, (void *)lpPolymorphicCode, dwOutputSize);
     asmjit::CodeBuffer& buf = code.sectionById(0)->buffer();
     memcpy(diOutput, buf.data(), buf.size());
@@ -562,11 +556,11 @@ int BagheeraPE::create( unsigned char * lpInputBuffer, unsigned long dwInputBuff
 
 
 
-    DEBUG("writing the code to a function");
-    WriteToFile(diOutput, dwOutputSize);
+    if (VERBOSE) printf("%s: writing the code to a function\n", INFO_BANNER);
+    WriteToFile(diOutput, dwOutputSize, options);
 
     /*
-    DEBUG("creating output buffer for the function");
+    if (VERBOSE) printf("%s: creating output buffer for the function");
     
     char* szOutputBuffer;
     szOutputBuffer = (char*) malloc(dwInputBuffer);
@@ -579,7 +573,7 @@ int BagheeraPE::create( unsigned char * lpInputBuffer, unsigned long dwInputBuff
 
     // call the decryption function via its function pointer
     //DecryptionProc function = reinterpret_cast<DecryptionProc>(lpOutputBuffer);
-    DEBUG("calling function");
+    if (VERBOSE) printf("%s: calling function");
     unsigned long dwOutputSize = function(szOutputBuffer);
 
     // display the decrypted text
@@ -621,9 +615,9 @@ int BagheeraPE::create( unsigned char * lpInputBuffer, unsigned long dwInputBuff
 //
 ///////////////////////////////////////////////////////////
 
-int BagheeraPE::execute( unsigned char * lpInputBuffer, unsigned long dwInputBuffer )
+int BagheeraPE::execute( unsigned char * lpInputBuffer, unsigned long dwInputBuffer, options_t *options )
 {
-  DEBUG("calling main function");
+  if (VERBOSE) printf("%s: calling main function\n", INFO_BANNER);
   
   // check input errors
   if ( (lpInputBuffer == NULL) || (dwInputBuffer == 0)  )
@@ -644,40 +638,40 @@ int BagheeraPE::execute( unsigned char * lpInputBuffer, unsigned long dwInputBuf
     logger.setFile(stdout);  // Set the standard output as the logger exit
   }
  
-  DEBUG("randomly select registers");
+  if (VERBOSE) printf("%s: randomly select registers\n", INFO_BANNER);
   SelectRegisters();
 
-  DEBUG("generate function prologue");
+  if (VERBOSE) printf("%s: generate function prologue\n", INFO_BANNER);
   GeneratePrologue(a);
 
-  DEBUG("set up relative addressing through the delta offset technique");
+  if (VERBOSE) printf("%s: set up relative addressing through the delta offset technique\n", INFO_BANNER);
   GenerateDeltaOffset(a);
 
   // encrypt the input data, generate encryption keys. the additional parameters set the lower and upper limits on the 
   // number of encryption instructions which will be generated (there is no limit to this number, you can specify 
   // numbers in the thousands, but be aware that this will make the output code quite large)
-  DEBUG("encrypt the input data");
+  if (VERBOSE) printf("%s: encrypt the input data\n", INFO_BANNER);
   EncryptInputBuffer(lpInputBuffer, dwInputBuffer, 5, 7);
 
-  DEBUG("generate code to set up keys for decryption");
+  if (VERBOSE) printf("%s: generate code to set up keys for decryption\n", INFO_BANNER);
   SetupDecryptionKeys(a);
   
-  DEBUG("generate decryption code");
+  if (VERBOSE) printf("%s: generate decryption code\n", INFO_BANNER);
   GenerateDecryption(a);
 
-  DEBUG("set up the values of the output registers");
+  if (VERBOSE) printf("%s: set up the values of the output registers\n", INFO_BANNER);
   SetupOutputRegisters(dwInputBuffer, a);
 
-  DEBUG("generate function epilogue");
+  if (VERBOSE) printf("%s: generate function epilogue\n", INFO_BANNER);
   GenerateEpilogue(1L, a);
 
-  DEBUG("align the size of the function to a multiple of 4 or 16");
+  if (VERBOSE) printf("%s: align the size of the function to a multiple of 4 or 16\n", INFO_BANNER);
   AlignDecryptorBody(rand()%2 == 0 ? 4L : 16L, a, code);
 
-  DEBUG("fix up any instructions that use delta offset addressing");
+  if (VERBOSE) printf("%s: fix up any instructions that use delta offset addressing\n", INFO_BANNER);
   UpdateDeltaOffsetAddressing(a);
 
-  DEBUG("place the encrypted data at the end of the function");
+  if (VERBOSE) printf("%s: place the encrypted data at the end of the function\n", INFO_BANNER);
   AppendEncryptedData(a);
 
 
@@ -686,6 +680,7 @@ int BagheeraPE::execute( unsigned char * lpInputBuffer, unsigned long dwInputBuf
 
   // free the array of encryption pseudoinstructions
   //free(&diCryptOps);
+  delete[] diCryptOps;
   
   ///////////////////////////////////////////////////////////
   //
@@ -696,13 +691,13 @@ int BagheeraPE::execute( unsigned char * lpInputBuffer, unsigned long dwInputBuf
   unsigned long dwOutputSize = code.codeSize();
   
   // assemble the code of the polymorphic function (this resolves jumps and labels)
-  DEBUG("assembling code and binding to a function");
+  if (VERBOSE) printf("%s: assembling code and binding to a function\n", INFO_BANNER);
   DecryptionProc lpPolymorphicCode;
   Error err = rt.add(&lpPolymorphicCode, &code);
   if (err) return 1;                // Handle a possible error returned by AsmJit.
 
   // this struct describes the allocated memory block
-  DEBUG("allocating memory for the execution of the function");
+  if (VERBOSE) printf("%s: allocating memory for the execution of the function\n", INFO_BANNER);
   void *diOutput = mmap(0, dwOutputSize, 
                    PROT_READ | PROT_WRITE ,
                    MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -721,7 +716,7 @@ int BagheeraPE::execute( unsigned char * lpInputBuffer, unsigned long dwInputBuf
   //std::cout << "aligned_dwOutputSize: " << aligned_size*pagesize << "\n";
   //posix_memalign((void **)&diOutput, pagesize, aligned_size*pagesize);
 
-  DEBUG("making the memory page(s) of the function executable");
+  if (VERBOSE) printf("%s: making the memory page(s) of the function executable\n", INFO_BANNER);
   if (mprotect(diOutput, dwOutputSize, PROT_EXEC|PROT_READ|PROT_WRITE) == -1){
     ERROR("could not make output buffer's page executable");
     exit(MUTAGEN_ERR_MEMORY);
@@ -731,15 +726,15 @@ int BagheeraPE::execute( unsigned char * lpInputBuffer, unsigned long dwInputBuf
   if (diOutput != NULL)
   {
     // copy the generated code of the decryption function
-    DEBUG("copying to memory the function code");
+    if (VERBOSE) printf("%s: copying to memory the function code\n", INFO_BANNER);
     //memcpy(diOutput, (void *)lpPolymorphicCode, dwOutputSize);
     asmjit::CodeBuffer& buf = code.sectionById(0)->buffer();
     memcpy(diOutput, buf.data(), buf.size());
 
-    DEBUG("writing the code to a function");
-    WriteToFile(diOutput, dwOutputSize);
+    if (VERBOSE) printf("%s: writing the code to a function\n", INFO_BANNER);
+    WriteToFile(diOutput, dwOutputSize, options);
 
-    DEBUG("creating output buffer for the function");
+    if (VERBOSE) printf("%s: creating output buffer for the function\n", INFO_BANNER);
     
     char* szOutputBuffer;
     szOutputBuffer = (char*) malloc(dwInputBuffer);
@@ -752,7 +747,7 @@ int BagheeraPE::execute( unsigned char * lpInputBuffer, unsigned long dwInputBuf
 
     // call the decryption function via its function pointer
     //DecryptionProc function = reinterpret_cast<DecryptionProc>(lpOutputBuffer);
-    DEBUG("calling function");
+    if (VERBOSE) printf("%s: calling function\n", INFO_BANNER);
     unsigned long dwOutputSize = function(szOutputBuffer);
 
     // display the decrypted text
