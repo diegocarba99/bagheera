@@ -32,3 +32,10 @@ Some of  Bagheera's features are the following:
 - https://www.sentrian.com.au/blog/a-short-history-of-computer-viruses
 - http://index-of.es/Viruses/T/The%20Art%20of%20Computer%20Virus%20Research%20and%20Defense.pdf
 - https://arxiv.org/pdf/1104.1070.pdf
+- https://www.alchemistowl.org/pocorgtfo/pocorgtfo20.pdf
+- http://index-of.es/Varios-2/Learning%20Linux%20Binary%20Analysis.pdf
+- file:///home/diego/ehu/tfg/elf-basics/elf.pdf
+- https://github.com/Binject/binjection/blob/master/bj/inject_elf.go
+- https://link.springer.com/content/pdf/10.1007/s11416-006-0028-7.pdf
+- https://migeel.sk/blog/2007/08/02/advanced-self-modifying-code/
+- https://hexterisk.github.io/blog/posts/2020/03/19/simple-code-injection-techniques-for-elf/

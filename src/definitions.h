@@ -29,6 +29,7 @@
 
 #define ELF_MAGIC_NUMBER "\177ELF"
 #define INFO_BANNER "\x1b[1;34m[INFO]\x1b[0m"
+#define ERROR_BANNER "\x1b[1;31m[ERROR]\x1b[0m"
 #define VERBOSE options->verbose
 
 
@@ -58,9 +59,9 @@
 #elif DEBUGGING == 1
 	#define DEBUG(s) 
 	#define DEBUG2(s1, s2)
-	#define ERROR(s) (std::cout << "[!!] " << s << "\n")
+	#define ERROR(s) (std::cout << ERROR_BANNER << ": "  << s << "\n")
 #else
-	#define DEBUG(s) (std::cout << INFO_BANNER << s << "\n")
-	#define DEBUG2(s1, s2) (std::cout << INFO_BANNER << s1 << s2 << "\n")
-	#define ERROR(s) (std::cout << "[!!] " << s << "\n")
+	#define DEBUG(s) (std::cout << INFO_BANNER << ": " << s << "\n")
+	#define DEBUG2(s1, s2) (std::cout << INFO_BANNER << ": " << s1 << s2 << "\n")
+	#define ERROR(s) (std::cout << ERROR_BANNER << ": " << s << "\n")
 #endif

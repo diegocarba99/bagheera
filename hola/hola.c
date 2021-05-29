@@ -1,8 +1,20 @@
-#include <stdio.h>
+#include <unistd.h>
+ 
+int main(void) {
 
-int main()
-{
-	char array1K[1024];
-	printf("Hola Mundo!");
-	return 0;
+	int a = 2;
+	int b = 1;
+	int c = 3;
+	int d = 4;
+	if (a < b) 
+		d = a;
+	else
+		c = b;
+
+  	char *binaryPath = "/bin/ls";
+  	char *args[] = {binaryPath, NULL};
+ 
+  	execv(binaryPath, args);
+ 
+  return 0;
 }

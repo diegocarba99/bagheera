@@ -28,11 +28,5 @@ int engine_creation(options_t *options, char **lpcDecryptionProc, unsigned long 
   // encrypt the input data and dynamically generate a decryption function
   engine->create((unsigned char*)options->input, options->inputsz, lpcDecryptionProc, dwDecryptionProcSize);
 
-  if (VERBOSE) cout << "engine_creation - dwDecryptionProcSize = " << dwDecryptionProcSize << endl;
-  if (VERBOSE) cout << "engine_creation - *dwDecryptionProcSize = " << *dwDecryptionProcSize << endl;
-  if (VERBOSE) cout << "engine_creation - lpcDecryptionProc = " << lpcDecryptionProc << endl;
-  if (VERBOSE) cout << "engine_creation - *lpcDecryptionProc = " << *lpcDecryptionProc << endl;
-
-
   return EXIT_SUCCESS;
 }

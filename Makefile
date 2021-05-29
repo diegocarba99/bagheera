@@ -33,14 +33,8 @@ ULIMIT_CONF = ulimit -c unlimited
 
 all: $(TARGET)
 
-<<<<<<< HEAD
 $(TARGET): $(SOURCES) $(HEADERS) $(TARGET).cpp
-	$(CC) -o $(COOL_NAME) $(TARGET).cpp $(SOURCES) $(CFLAGS) -L$(LIB) -lasmjit
-=======
-$(TARGET): $(SRC)$(ENGINE).cpp $(SRC)$(ENGINE).hpp $(TARGET).cpp
-	$(ULIMIT_CONF)
-	$(CC) -o $(COOL_NAME) $(TARGET).cpp $(SRC)$(ENGINE).cpp $(CFLAGS) -L$(LIB) -lasmjit 
->>>>>>> parent of 411e78d... elf infection and code refactorization
+	$(CC) -o $(COOL_NAME) $(TARGET).cpp $(SOURCES) $(CFLAGS) -L$(LIB) -lasmjit -lexplain
 
 make single:
 	$(CC) -o $(TARGET) $(TARGET).cpp $(CFLAGS) -L$(LIB) -lasmjit
@@ -48,8 +42,15 @@ make single:
 av:
 	$(AV) $(SIGNATUREDB)$(DB) $(BINS)* -v
 
+target:
+	gcc -o hola/hola hola/hola.c -no-pie -static -static-libgcc 
+
+payload:
+	rm asm/exec_parasite
+	nasm -f bin asm/exec_parasite.asm -o asm/exec_parasite
+
 run:
-	./$(COOL_NAME)
+	./bagheera -m infect -e hola/hola -v -i asm/exec_parasite
 
 clean: 
 	$(RM) core*

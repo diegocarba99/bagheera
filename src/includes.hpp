@@ -38,7 +38,7 @@
 
 #include <elf.h>
 
-
+#include <libexplain/lseek.h>
 
 
 

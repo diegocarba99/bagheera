@@ -1,0 +1,44 @@
+mov rcx, rdi
+call L0
+mov r10, 1
+leave
+ret 8
+L0:
+pop rsi
+long add rsi, 0
+mov rdi, 3182333406
+sub rdi, 1517107518
+mov rdx, 13
+L1:
+mov rax, qword ptr [rsi]
+sub rax, rdi
+not rax
+add rax, rdi
+not rax
+not rax
+sub rax, rdi
+mov qword ptr [rcx], rax
+mov qword ptr [rsi], rax
+add rsi, 8
+add rcx, 8
+dec rdx
+short jne L1
+mov rax, 97
+call L2
+ret 0
+align 4
+db 60
+L2:
+db 4F03EF0CA9BEAC14
+db 6627C93588D287D2
+db 27272120B1B2AFB6
+db 530FF11DBFBCBADF
+db 6534FEED8B9ADF93
+db 36E0CCF69ADF8996
+db 2DDFCD42A2A0A1DF
+db 72DC13EBD287D287
+db 724AF93140B77C3F
+db 9E0CB89BB772CA49
+db A054411ACF2D4DC6
+db 904F0008A1A1A5A6
+db 4754416300000000

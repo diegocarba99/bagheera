@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 
 
         case 'e':
-          if (!(options.elf = open(optarg, O_RDWR|O_SYNC)) )
+          if (!(options.elf = open(optarg, O_RDWR)) )
             error(ERR_FOPEN_ELF);
           break;
 
