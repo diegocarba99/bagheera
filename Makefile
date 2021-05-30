@@ -49,6 +49,10 @@ payload:
 	rm asm/exec_parasite
 	nasm -f bin asm/exec_parasite.asm -o asm/exec_parasite
 
+payload2:
+	rm asm/simple_shellcode
+	nasm -f bin asm/simple_shellcode.asm -o asm/simple_shellcode
+
 run:
 	./bagheera -m infect -e hola/hola -v -i asm/exec_parasite
 

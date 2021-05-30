@@ -5,6 +5,8 @@
 #include "src/infect.h"
 #include "src/bagheera.hpp"
 
+using namespace std;
+
 extern int errno;
 extern char *optarg;
 extern int opterr, optind;
@@ -53,7 +55,8 @@ int main(int argc, char *argv[])
           options.inputsz = lseek(input_fd, 0, SEEK_END);
           lseek(input_fd, 0, SEEK_SET);
 
-          options.input = (char *) malloc(options.inputsz);
+          //options.input = (char *) malloc(options.inputsz);
+          options.input = new char[options.inputsz];
           if (options.input == NULL )
             error(ERR_INPUT_MALLOC);
           
@@ -120,6 +123,8 @@ int main(int argc, char *argv[])
         if (options.verbose) printf("%s: starting bagheera in engine mode\n", INFO_BANNER );
         engine_execution(&options);
     }
+
+    cout << SUCCESS_BANNER << ": Bagheera terminated correctly. Happy hacking! ^_^" << endl;
 
     return EXIT_SUCCESS;
 }

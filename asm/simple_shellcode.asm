@@ -24,8 +24,6 @@ main:
     pop rcx
     pop rax
 
-    push 0x400b80 ; salto al punto de entrada
-    ret
 
 frase: db "Ejecutando payload",33,10
 len : dd 20

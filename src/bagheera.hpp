@@ -47,6 +47,9 @@ using namespace asmjit;
       SPE_CRYPT_OP_NEG = 4,
     };
 
+    // flag to indicate functioning mode
+    int mode;
+
     // buffer with the encryption operations
     int *diCryptOps;
 
@@ -60,7 +63,7 @@ using namespace asmjit;
     unsigned long dwEncryptedBlocks;
 
     // encryption key
-    unsigned long dwEncryptionKey;
+    unsigned char dwEncryptionKey;
 
     FileLogger logger;    // Logger should always survive CodeHolder.
 
